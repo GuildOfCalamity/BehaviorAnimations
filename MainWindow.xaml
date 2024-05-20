@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="BehaviorAnimations.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behave="using:BehaviorAnimations.Behaviors"
+    xmlns:ctrl="using:BehaviorAnimations.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:interact="using:Microsoft.Xaml.Interactivity"
+    xmlns:interactcore="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:local="using:BehaviorAnimations"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid
+        x:Name="root"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--#region [Window Content Animation]-->
+        <Grid.Resources>
+            <ThemeShadow x:Name="SharedShadow" />
+        </Grid.Resources>
+        <interact:Interaction.Behaviors>
+            <behave:OpacityAnimationBehavior
+                EaseMode="QuadEaseOut"
+                Seconds="1.0"
+                From="0.0"
+                To="1.0" />
+            <behave:SlideAnimationBehavior
+                Direction="Up"
+                EaseMode="QuadEaseOut"
+                Seconds="1.0" />
+        </interact:Interaction.Behaviors>
+        <!--#endregion-->
+
+        <!--#region [Custom TitleBar With Animation]-->
+        <Grid
+            x:Name="CustomTitleBar"
+            Grid.Row="0"
+            Height="30"
+            Margin="0">
+            <interact:Interaction.Behaviors>
+                <behave:OpacityAnimationBehavior
+                    EaseMode="QuadEaseOut"
+                    Seconds="1.5"
+                    From="0.0"
+                    To="1.0" />
+                <behave:SlideAnimationBehavior
+                    Direction="Left"
+                    EaseMode="QuadEaseOut"
+                    FallbackAmount="350"
+                    Seconds="1.7" />
+            </interact:Interaction.Behaviors>
+            <StackPanel Orientation="Horizontal">
+                <Image
+                    Width="25"
+                    Height="25"
+                    Margin="4,1"
+                    Source="ms-appx:///Assets/StoreLogo.png" />
+                <TextBlock
+                    Margin="2,0"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Title, Mode=OneWay}" />
+            </StackPanel>
+        </Grid>
+        <!--#endregion-->
+
+        <!--#region [Main Content]-->
+        <ScrollViewer Grid.Row="1">
+            <Grid x:Name="gridContent">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel
+                    x:Name="spConfig"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Margin="20"
+                    Orientation="Vertical"
+                    Spacing="2">
+                    <StackPanel.Resources>
+                        <Style TargetType="TextBox">
+                            <Setter Property="MaxWidth" Value="300" />
+                            <Setter Property="FontFamily" Value="{StaticResource PrimaryFont}" />
+                        </Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="FontFamily" Value="{StaticResource PrimaryFont}" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*" />
+                            <ColumnDefinition Width="1*" />
+                        </Grid.ColumnDefinitions>
+                        <!--#region [Opacity Animation Test]-->
+                        <TextBlock
+                            Grid.Column="0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            FontSize="{StaticResource FontSizeHuge}"
+                            FontWeight="Bold"
+                            Foreground="{ThemeResource GradientHeaderBrush}"
+                            Text="{x:Bind local:App.GetCurrentNamespace()}">
+                            <interact:Interaction.Behaviors>
+                                <behave:OpacityAnimationBehavior
+                                    EaseMode="QuadEaseOut"
+                                    Seconds="4.0"
+                                    From="0.0"
+                                    To="1.0" />
+                            </interact:Interaction.Behaviors>
+                        </TextBlock>
+                        <!--#endregion-->
+
+                        <!--#region [Scale Animation Test]-->
+                        <Image
+                            Grid.Column="1"
+                            Width="60"
+                            Height="60"
+                            Margin="1,40,1,1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Source="ms-appx:///Assets/StoreLogo.png">
+                            <interact:Interaction.Behaviors>
+                                <behave:ScaleAnimationBehavior
+                                    EaseMode="QuadEaseOut"
+                                    Final="1.0"
+                                    Seconds="4.0" />
+                                <behave:OpacityAnimationBehavior
+                                    EaseMode="QuadEaseOut"
+                                    Seconds="3.0"
+                                    From="0.0"
+                                    To="0.9" />
+                            </interact:Interaction.Behaviors>
+                        </Image>
+                        <!--#endregion-->
+                    </Grid>
+
+                    <ctrl:SeparatorLine Margin="1,0,0,0" />
+
+                    <!--#region [Spring Animation Test]-->
+                    <Slider
+                        x:Name="sldr"
+                        Width="170"
+                        Margin="4,10,0,0"
+                        HorizontalAlignment="Left"
+                        LargeChange="10"
+                        Maximum="100"
+                        Minimum="1"
+                        SmallChange="1"
+                        Value="50">
+                        <Slider.Header>
+                            <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Run Foreground="{ThemeResource GradientHeaderBrush}" Text="Example Value (" />
+                                <Run Foreground="{ThemeResource GradientBorderBrush}" Text="{x:Bind sldr.Value, Mode=OneWay}" />
+                                <Run Foreground="{ThemeResource GradientHeaderBrush}" Text=")" />
+                            </TextBlock>
+                        </Slider.Header>
+                        <interact:Interaction.Behaviors>
+                            <behave:SpringAnimationBehavior
+                                Damping="0.2"
+                                Final="1.04"
+                                Seconds="0.04" />
+                        </interact:Interaction.Behaviors>
+                    </Slider>
+                    <!--#endregion-->
+
+                    <!--#region [KeyDown Behavior Test Using CallMethodAction]-->
+                    <TextBox
+                        x:Name="tbSetting1"
+                        Width="170"
+                        Margin="1,10,0,0"
+                        HorizontalAlignment="Left"
+                        AcceptsReturn="False"
+                        MaxLength="50"
+                        PlaceholderText="50 characters max"
+                        TextWrapping="Wrap">
+                        <TextBox.Header>
+                            <TextBlock Foreground="{ThemeResource GradientHeaderBrush}" Text="Press Back Key" />
+                        </TextBox.Header>
+                        <interact:Interaction.Behaviors>
+                            <behave:AutoFocusBehavior />
+                            <behave:KeyDownTriggerBehavior Key="Back">
+                                <interactcore:CallMethodAction MethodName="SomePublicMethodHere" TargetObject="{x:Bind}" />
+                                <!--<interactcore:InvokeCommandAction Command="{x:Bind ViewModel.KeyDownCommand}" CommandParameter="{x:Bind root}" />-->
+                                <!--<interactcore:ChangePropertyAction PropertyName="Margin" TargetObject="{x:Bind root}" Value="30" />-->
+                            </behave:KeyDownTriggerBehavior>
+                        </interact:Interaction.Behaviors>
+                    </TextBox>
+                    <!--#endregion-->
+
+                    <!--#region [KeyDown Behavior Test Using InvokeCommandAction]-->
+                    <TextBox
+                        x:Name="tbSetting2"
+                        Width="170"
+                        Margin="1,10,0,0"
+                        HorizontalAlignment="Left"
+                        AcceptsReturn="False"
+                        MaxLength="50"
+                        PlaceholderText="50 characters max"
+                        TextWrapping="Wrap">
+                        <TextBox.Header>
+                            <TextBlock Foreground="{ThemeResource GradientHeaderBrush}" Text="Press Spacebar" />
+                        </TextBox.Header>
+                        <interact:Interaction.Behaviors>
+                            <behave:KeyDownTriggerBehavior Key="Space">
+                                <interactcore:InvokeCommandAction Command="{x:Bind KeyDownCommand}" CommandParameter="{x:Bind tbSetting2}" />
+                                <!--<interactcore:CallMethodAction MethodName="SomePublicMethodHere" TargetObject="{x:Bind}" />-->
+                                <!--<interactcore:ChangePropertyAction PropertyName="Margin" TargetObject="{x:Bind root}" Value="30" />-->
+                            </behave:KeyDownTriggerBehavior>
+                        </interact:Interaction.Behaviors>
+                    </TextBox>
+                    <!--#endregion-->
+
+                    <!--#region [EventTriggerBehavior Test]-->
+                    <ToggleSwitch
+                        x:Name="tsSample"
+                        Margin="1,10,0,0"
+                        HorizontalAlignment="Left"
+                        Foreground="{ThemeResource GradientHeaderBrush}"
+                        Header=""
+                        IsOn="True"
+                        OffContent="Option Enabled"
+                        OnContent="Option Disabled">
+                        <interact:Interaction.Behaviors>
+                            <interactcore:EventTriggerBehavior EventName="PointerEntered">
+                                <interactcore:ChangePropertyAction
+                                    PropertyName="Header"
+                                    TargetObject="{x:Bind tsSample}"
+                                    Value="PointerEntered" />
+                            </interactcore:EventTriggerBehavior>
+                            <interactcore:EventTriggerBehavior EventName="PointerExited">
+                                <interactcore:ChangePropertyAction
+                                    PropertyName="Header"
+                                    TargetObject="{x:Bind tsSample}"
+                                    Value="PointerExited" />
+                            </interactcore:EventTriggerBehavior>
+                            <interactcore:EventTriggerBehavior EventName="PointerCanceled">
+                                <interactcore:ChangePropertyAction
+                                    PropertyName="Header"
+                                    TargetObject="{x:Bind tsSample}"
+                                    Value="PointerCanceled" />
+                            </interactcore:EventTriggerBehavior>
+                        </interact:Interaction.Behaviors>
+                    </ToggleSwitch>
+                    <!--#endregion-->
+
+                    <ctrl:SeparatorLine Margin="1,5,0,0" />
+
+                    <!--#region [Rotation Animation Test]-->
+                    <Image
+                        Width="60"
+                        Height="60"
+                        Margin="62,24,20,10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
+                        Source="ms-appx:///Assets/Spinner.png">
+                        <interact:Interaction.Behaviors>
+                            <behave:RotationAnimationBehavior
+                                Direction="Normal"
+                                EaseMode="CircleEaseInOut"
+                                Seconds="3.0" />
+                            <behave:OpacityAnimationBehavior
+                                EaseMode="QuadEaseOut"
+                                Seconds="2.0"
+                                From="0.0"
+                                To="0.4" />
+                        </interact:Interaction.Behaviors>
+                    </Image>
+                    <!--#endregion-->
+
+                </StackPanel>
+
+                <!--#region [Rotation Animation Test]-->
+                <Border
+                    Grid.Column="1"
+                    Width="120"
+                    Height="120"
+                    Margin="0,10,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    BorderBrush="{ThemeResource GradientBorderBrush}"
+                    BorderThickness="8"
+                    CornerRadius="5"
+                    Shadow="{ThemeResource SharedShadow}"
+                    Translation="0,0,64">
+                    <Image Margin="5" Source="ms-appx:///Assets/StoreLogo.png">
+                        <interact:Interaction.Behaviors>
+                            <behave:OpacityAnimationBehavior
+                                EaseMode="Linear"
+                                Seconds="12.0"
+                                From="1.0"
+                                To="0.0" />
+                        </interact:Interaction.Behaviors>
+                    </Image>
+                    <interact:Interaction.Behaviors>
+                        <behave:RotationAnimationBehavior
+                            Direction="Reverse"
+                            EaseMode="Linear"
+                            Seconds="9.0" />
+                    </interact:Interaction.Behaviors>
+                </Border>
+                <!--#endregion-->
+            </Grid>
+        </ScrollViewer>
+        <!--#endregion-->
+
+        <!--#region [Custom Control Test]-->
+        <StackPanel
+            Grid.Row="1"
+            Margin="6"
+            VerticalAlignment="Bottom">
+            <!--  Wrap this in a StackPanel/Grid to support AnimateUIElementOffset  -->
+            <ctrl:AutoCloseInfoBar
+                x:Name="infoBar"
+                AutoCloseInterval="6000"
+                IsOpen="False"
+                Seconds="2.0"
+                Severity="Informational"
+                SlideUp="True">
+                <!--
+                <interact:Interaction.Behaviors>
+                    <behave:InfoBarOpacityBehavior EaseMode="QuadEaseOut" Final="1.0" Seconds="1.1" />
+                </interact:Interaction.Behaviors>
+                -->
+            </ctrl:AutoCloseInfoBar>
+        </StackPanel>
+        <!--#endregion-->
+
+    </Grid>
+</Window>

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "BehaviorAnimations (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "BehaviorAnimations (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
