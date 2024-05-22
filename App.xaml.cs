@@ -35,7 +35,6 @@ public partial class App : Application
 #else
 public static bool IsPackaged { get => true; }
 #endif
-    // We won't configure backing fields for these as the user could adjust them during app lifetime.
     public static bool TransparencyEffectsEnabled { get => m_UISettings.AdvancedEffectsEnabled; }
     public static bool AnimationsEffectsEnabled { get => m_UISettings.AnimationsEnabled; }
     public static double TextScaleFactor { get => m_UISettings.TextScaleFactor; }

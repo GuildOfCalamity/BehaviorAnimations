@@ -12,6 +12,100 @@ namespace BehaviorAnimations;
 public static class Extensions
 {
     /// <summary>
+    /// Starts an animation on the given property of a <see cref="Microsoft.UI.Composition.CompositionObject"/>
+    /// </summary>
+    /// <typeparam name="T">The type of the property to animate</typeparam>
+    /// <param name="target">The target <see cref="Microsoft.UI.Composition.CompositionObject"/></param>
+    /// <param name="property">The name of the property to animate</param>
+    /// <param name="value">The final value of the property</param>
+    /// <param name="duration">The animation duration</param>
+    /// <returns>A <see cref="Task"/> that completes when the created animation completes</returns>
+    public static Task StartAnimationAsync<T>(this Microsoft.UI.Composition.CompositionObject target, string property, T value, TimeSpan duration) where T : unmanaged
+    {
+        // Stop previous animations
+        target.StopAnimation(property);
+
+        // Setup the animation to run
+        Microsoft.UI.Composition.KeyFrameAnimation animation;
+
+        // Switch on the value to determine the necessary KeyFrameAnimation type
+        switch (value)
+        {
+            case float f:
+                var scalarAnimation = target.Compositor.CreateScalarKeyFrameAnimation();
+                scalarAnimation.InsertKeyFrame(1f, f);
+                animation = scalarAnimation;
+                break;
+            case Windows.UI.Color c:
+                var colorAnimation = target.Compositor.CreateColorKeyFrameAnimation();
+                colorAnimation.InsertKeyFrame(1f, c);
+                animation = colorAnimation;
+                break;
+            case System.Numerics.Vector4 v4:
+                var vector4Animation = target.Compositor.CreateVector4KeyFrameAnimation();
+                vector4Animation.InsertKeyFrame(1f, v4);
+                animation = vector4Animation;
+                break;
+            default: throw new ArgumentException($"Invalid animation type: {typeof(T)}", nameof(value));
+        }
+
+        animation.Duration = duration;
+
+        // Get the batch and start the animations
+        var batch = target.Compositor.CreateScopedBatch(Microsoft.UI.Composition.CompositionBatchTypes.Animation);
+
+        // Create a TCS for the result
+        var tcs = new TaskCompletionSource<object>();
+
+        batch.Completed += (s, e) => tcs.SetResult(null);
+
+        target.StartAnimation(property, animation);
+
+        batch.End();
+
+        return tcs.Task;
+    }
+
+    public static Microsoft.UI.Composition.ImplicitAnimationCollection CreateImplicitAnimation(this Microsoft.UI.Composition.ImplicitAnimationCollection source, string Target, TimeSpan? Duration = null)
+    {
+        Microsoft.UI.Composition.KeyFrameAnimation? animation = null;
+        switch (Target.ToLower())
+        {
+            case "offset":
+            case "scale":
+            case "centerpoint":
+            case "rotationaxis":
+                animation = source.Compositor.CreateVector3KeyFrameAnimation();
+                break;
+            case "size":
+                animation = source.Compositor.CreateVector2KeyFrameAnimation();
+                break;
+            case "opacity":
+            case "blueradius":
+            case "rotationangle":
+            case "rotationangleindegrees":
+                animation = source.Compositor.CreateScalarKeyFrameAnimation();
+                break;
+            case "color":
+                animation = source.Compositor.CreateColorKeyFrameAnimation();
+                break;
+        }
+
+        if (animation is null)
+            throw new ArgumentNullException("Unknown Target");
+
+        if (Duration is null)
+            Duration = TimeSpan.FromSeconds(0.5d); // 500 milliseconds
+
+        animation.InsertExpressionKeyFrame(1f, "this.FinalValue");
+        animation.Duration = Duration.Value;
+        animation.Target = Target;
+
+        source[Target] = animation;
+        return source;
+    }
+
+    /// <summary>
     /// Multiplies the given <see cref="TimeSpan"/> by the scalar amount provided.
     /// </summary>
     public static TimeSpan Multiply(this TimeSpan timeSpan, double scalar) => new TimeSpan((long)(timeSpan.Ticks * scalar));

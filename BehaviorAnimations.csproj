@@ -11,6 +11,7 @@
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
+    <ApplicationIcon>Assets\StoreLogo.ico</ApplicationIcon>
       <!-- 
         [for SDK v1.5 specifically]
         https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/stable-channel#other-new-features-from-across-the-winappsdk
@@ -50,7 +51,6 @@
          https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#preservecompilationcontext
     -->
     <PreserveCompilationContext>false</PreserveCompilationContext>
-    <ApplicationIcon>Assets\StoreLogo.ico</ApplicationIcon>
   </PropertyGroup>
 
   <!-- 

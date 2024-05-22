@@ -11,7 +11,6 @@
     xmlns:local="using:BehaviorAnimations"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
     <Grid
         x:Name="root"
         HorizontalAlignment="Stretch"
@@ -99,6 +98,7 @@
                             <ColumnDefinition Width="3*" />
                             <ColumnDefinition Width="1*" />
                         </Grid.ColumnDefinitions>
+
                         <!--#region [Opacity Animation Test]-->
                         <TextBlock
                             Grid.Column="0"
@@ -140,6 +140,7 @@
                             </interact:Interaction.Behaviors>
                         </Image>
                         <!--#endregion-->
+
                     </Grid>
 
                     <ctrl:SeparatorLine Margin="1,0,0,0" />
@@ -165,7 +166,7 @@
                         <interact:Interaction.Behaviors>
                             <behave:SpringAnimationBehavior
                                 Damping="0.2"
-                                Final="1.04"
+                                Final="1.05"
                                 Seconds="0.04" />
                         </interact:Interaction.Behaviors>
                     </Slider>
@@ -182,11 +183,11 @@
                         PlaceholderText="50 characters max"
                         TextWrapping="Wrap">
                         <TextBox.Header>
-                            <TextBlock Foreground="{ThemeResource GradientHeaderBrush}" Text="Press Back Key" />
+                            <TextBlock Foreground="{ThemeResource GradientHeaderBrush}" Text="Press Spacebar" />
                         </TextBox.Header>
                         <interact:Interaction.Behaviors>
                             <behave:AutoFocusBehavior />
-                            <behave:KeyDownTriggerBehavior Key="Back">
+                            <behave:KeyDownTriggerBehavior Key="Space">
                                 <interactcore:CallMethodAction MethodName="SomePublicMethodHere" TargetObject="{x:Bind}" />
                                 <!--<interactcore:InvokeCommandAction Command="{x:Bind ViewModel.KeyDownCommand}" CommandParameter="{x:Bind root}" />-->
                                 <!--<interactcore:ChangePropertyAction PropertyName="Margin" TargetObject="{x:Bind root}" Value="30" />-->
@@ -204,12 +205,13 @@
                         AcceptsReturn="False"
                         MaxLength="50"
                         PlaceholderText="50 characters max"
-                        TextWrapping="Wrap">
+                        TextWrapping="Wrap"
+                        Visibility="{x:Bind local:Functions.NotEmptyStringToVisible(tbSetting1.Text), Mode=OneWay}">
                         <TextBox.Header>
-                            <TextBlock Foreground="{ThemeResource GradientHeaderBrush}" Text="Press Spacebar" />
+                            <TextBlock Foreground="{ThemeResource GradientHeaderBrush}" Text="Press Backspace" />
                         </TextBox.Header>
                         <interact:Interaction.Behaviors>
-                            <behave:KeyDownTriggerBehavior Key="Space">
+                            <behave:KeyDownTriggerBehavior Key="Back">
                                 <interactcore:InvokeCommandAction Command="{x:Bind KeyDownCommand}" CommandParameter="{x:Bind tbSetting2}" />
                                 <!--<interactcore:CallMethodAction MethodName="SomePublicMethodHere" TargetObject="{x:Bind}" />-->
                                 <!--<interactcore:ChangePropertyAction PropertyName="Margin" TargetObject="{x:Bind root}" Value="30" />-->
@@ -226,8 +228,8 @@
                         Foreground="{ThemeResource GradientHeaderBrush}"
                         Header=""
                         IsOn="True"
-                        OffContent="Option Enabled"
-                        OnContent="Option Disabled">
+                        OffContent="Option Disabled"
+                        OnContent="Option Enabled">
                         <interact:Interaction.Behaviors>
                             <interactcore:EventTriggerBehavior EventName="PointerEntered">
                                 <interactcore:ChangePropertyAction
@@ -250,6 +252,35 @@
                         </interact:Interaction.Behaviors>
                     </ToggleSwitch>
                     <!--#endregion-->
+
+                    <StackPanel
+                        Margin="0,12,0,2"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                        <Button
+                            MinWidth="120"
+                            Content="Color Animation"
+                            FontFamily="{ThemeResource PrimaryFont}"
+                            FontSize="{ThemeResource FontSizeMedium}">
+                            <interact:Interaction.Behaviors>
+                                <behave:ColorAnimationBehavior
+                                    EaseMode="QuadEaseOut"
+                                    Interpolation="Rgb"
+                                    Seconds="4.0"
+                                    From="#FF4800FF"
+                                    To="#FF00FFFF" />
+                            </interact:Interaction.Behaviors>
+                        </Button>
+                        <Button
+                            MinWidth="120"
+                            Content="Color Gradient"
+                            FontFamily="{ThemeResource PrimaryFont}"
+                            FontSize="{ThemeResource FontSizeMedium}">
+                            <interact:Interaction.Behaviors>
+                                <behave:ColorGradientBehavior From="#FF4800FF" To="#FF00FFFF" />
+                            </interact:Interaction.Behaviors>
+                        </Button>
+                    </StackPanel>
 
                     <ctrl:SeparatorLine Margin="1,5,0,0" />
 
@@ -307,6 +338,7 @@
                     </interact:Interaction.Behaviors>
                 </Border>
                 <!--#endregion-->
+
             </Grid>
         </ScrollViewer>
         <!--#endregion-->

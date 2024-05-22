@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Numerics;
 
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
-using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.Xaml.Interactivity;
 
-using Windows.Foundation;
-
 namespace BehaviorAnimations.Behaviors;
-
 
 /// <summary>
 /// <see cref="FrameworkElement"/> <see cref="Microsoft.Xaml.Interactivity.Behavior"/>.
 /// </summary>
-public class OpacityAnimationBehavior : Behavior<FrameworkElement>
+/// <remarks>
+/// These are the bound events:
+///  - Loaded..........: Applies From/To gradient brush.
+///  - Unloaded........: No brush change.
+///  - PointerEntered..: Applies To/From gradient brush.
+///  - PointerExited...: Applies From/To gradient brush.
+/// </remarks>
+public class ColorAnimationBehavior : Behavior<FrameworkElement>
 {
     #region [Props]
     /// <summary>
@@ -24,7 +27,7 @@ public class OpacityAnimationBehavior : Behavior<FrameworkElement>
     public static readonly DependencyProperty SecondsProperty = DependencyProperty.Register(
         nameof(Seconds),
         typeof(double),
-        typeof(OpacityAnimationBehavior),
+        typeof(ColorAnimationBehavior),
         new PropertyMetadata(1.25d));
 
     /// <summary>
@@ -41,16 +44,16 @@ public class OpacityAnimationBehavior : Behavior<FrameworkElement>
     /// </summary>
     public static readonly DependencyProperty FromProperty = DependencyProperty.Register(
         nameof(From),
-        typeof(double),
-        typeof(OpacityAnimationBehavior),
-        new PropertyMetadata(0d));
+        typeof(Windows.UI.Color),
+        typeof(ColorAnimationBehavior),
+        new PropertyMetadata(Microsoft.UI.Colors.Transparent));
 
     /// <summary>
-    /// Gets or sets the amount.
+    /// Gets or sets the from color.
     /// </summary>
-    public double From
+    public Windows.UI.Color From
     {
-        get => (double)GetValue(FromProperty);
+        get => (Windows.UI.Color)GetValue(FromProperty);
         set => SetValue(FromProperty, value);
     }
 
@@ -59,16 +62,16 @@ public class OpacityAnimationBehavior : Behavior<FrameworkElement>
     /// </summary>
     public static readonly DependencyProperty ToProperty = DependencyProperty.Register(
         nameof(To),
-        typeof(double),
-        typeof(OpacityAnimationBehavior),
-        new PropertyMetadata(1d));
+        typeof(Windows.UI.Color),
+        typeof(ColorAnimationBehavior),
+        new PropertyMetadata(Microsoft.UI.Colors.Transparent));
 
     /// <summary>
-    /// Gets or sets the amount.
+    /// Gets or sets the to color.
     /// </summary>
-    public double To
+    public Windows.UI.Color To
     {
-        get => (double)GetValue(ToProperty);
+        get => (Windows.UI.Color)GetValue(ToProperty);
         set => SetValue(ToProperty, value);
     }
 
@@ -78,7 +81,7 @@ public class OpacityAnimationBehavior : Behavior<FrameworkElement>
     public static readonly DependencyProperty EaseModeProperty = DependencyProperty.Register(
         nameof(EaseMode),
         typeof(string),
-        typeof(OpacityAnimationBehavior),
+        typeof(ColorAnimationBehavior),
         new PropertyMetadata("Linear"));
 
     /// <summary>
@@ -88,6 +91,24 @@ public class OpacityAnimationBehavior : Behavior<FrameworkElement>
     {
         get => (string)GetValue(EaseModeProperty);
         set => SetValue(EaseModeProperty, value);
+    }
+
+    /// <summary>
+    /// Identifies the <see cref="Interpolation"/> property for the animation.
+    /// </summary>
+    public static readonly DependencyProperty InterpolationProperty = DependencyProperty.Register(
+        nameof(Interpolation),
+        typeof(Microsoft.UI.Composition.CompositionColorSpace),
+        typeof(ColorAnimationBehavior),
+        new PropertyMetadata(Microsoft.UI.Composition.CompositionColorSpace.Rgb));
+
+    /// <summary>
+    /// Gets or sets the easing type for the compositor.
+    /// </summary>
+    public Microsoft.UI.Composition.CompositionColorSpace Interpolation
+    {
+        get => (Microsoft.UI.Composition.CompositionColorSpace)GetValue(InterpolationProperty);
+        set => SetValue(InterpolationProperty, value);
     }
     #endregion
 
@@ -100,6 +121,8 @@ public class OpacityAnimationBehavior : Behavior<FrameworkElement>
 
         AssociatedObject.Loaded += AssociatedObject_Loaded;
         AssociatedObject.Unloaded += AssociatedObject_Unloaded;
+        AssociatedObject.PointerEntered += AssociatedObject_PointerEntered;
+        AssociatedObject.PointerExited += AssociatedObject_PointerExited;
     }
 
     protected override void OnDetaching()
@@ -111,57 +134,86 @@ public class OpacityAnimationBehavior : Behavior<FrameworkElement>
 
         AssociatedObject.Loaded -= AssociatedObject_Loaded;
         AssociatedObject.Unloaded -= AssociatedObject_Unloaded;
-    }
-
-    void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
-    {
-        Debug.WriteLine($"[INFO] {sender.GetType().Name} loaded at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
-
-        var obj = sender as FrameworkElement;
-        if (obj is null) { return; }
-
-        if (obj.ActualHeight != double.NaN && obj.ActualHeight != 0)
-            Debug.WriteLine($"[INFO] Reported {sender.GetType().Name} height is {obj.ActualHeight} pixels");
-
-        Debug.WriteLine($"[INFO] Opacity animation will run for {Seconds} seconds.");
-        AnimateUIElementOpacity(From, To, TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
+        AssociatedObject.PointerEntered -= AssociatedObject_PointerEntered;
+        AssociatedObject.PointerExited -= AssociatedObject_PointerExited;
     }
 
     /// <summary>
-    /// Mock disposal routine.
+    /// <see cref="FrameworkElement"/> event.
+    /// </summary>
+    void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
+    {
+        Debug.WriteLine($"[INFO] {sender.GetType().Name} loaded at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+        AnimateUIElementColor(From, To, TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
+    }
+
+    /// <summary>
+    /// <see cref="FrameworkElement"/> event.
     /// </summary>
     void AssociatedObject_Unloaded(object sender, RoutedEventArgs e)
     {
         Debug.WriteLine($"[INFO] {sender.GetType().Name} unloaded at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
     }
 
+    /// <summary>
+    /// <see cref="FrameworkElement"/> event.
+    /// </summary>
+    void AssociatedObject_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        AnimateUIElementColor(To, From, TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
+    }
+
+    /// <summary>
+    /// <see cref="FrameworkElement"/> event.
+    /// </summary>
+    void AssociatedObject_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        AnimateUIElementColor(From, To, TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
+    }
+
     #region [Composition Animations]
     /// <summary>
-    /// Opacity animation using <see cref="Microsoft.UI.Composition.ScalarKeyFrameAnimation"/>
+    /// Only a <see cref="Microsoft.UI.Composition.CompositionColorBrush"/> can be animated.
+    /// https://github.com/MicrosoftDocs/winrt-api/blob/docs/windows.ui.composition/compositionobject_startanimation_709050842.md
     /// </summary>
-    void AnimateUIElementOpacity(double from, double to, TimeSpan duration, UIElement target, string ease, Microsoft.UI.Composition.AnimationDirection direction = Microsoft.UI.Composition.AnimationDirection.Normal)
+    void AnimateUIElementColor(Windows.UI.Color from, Windows.UI.Color to, TimeSpan duration, UIElement element, string ease)
     {
         Microsoft.UI.Composition.CompositionEasingFunction easer;
-        var targetVisual = ElementCompositionPreview.GetElementVisual(target);
+        var targetVisual = ElementCompositionPreview.GetElementVisual(element);
         if (targetVisual is null) { return; }
         var compositor = targetVisual.Compositor;
-        var opacityAnimation = compositor.CreateScalarKeyFrameAnimation();
-        opacityAnimation.StopBehavior = Microsoft.UI.Composition.AnimationStopBehavior.SetToFinalValue;
-        opacityAnimation.Direction = direction;
-        opacityAnimation.Duration = duration;
-        opacityAnimation.Target = "Opacity";
+        var colorAnimation = compositor.CreateColorKeyFrameAnimation();
+        colorAnimation.StopBehavior = Microsoft.UI.Composition.AnimationStopBehavior.LeaveCurrentValue;
+        colorAnimation.Duration = duration;
 
         if (string.IsNullOrEmpty(ease) || ease.Contains("linear", StringComparison.CurrentCultureIgnoreCase))
             easer = compositor.CreateLinearEasingFunction();
         else
-        {
-            //easer = compositor.CreateCubicBezierEasingFunction(new(1f, 0.3f), new(0.6f, 0.7f));
             easer = CreatePennerEquation(compositor, ease);
-        }
 
-        opacityAnimation.InsertKeyFrame(0.0f, (float)from, easer);
-        opacityAnimation.InsertKeyFrame(1.0f, (float)to, easer);
-        targetVisual.StartAnimation("Opacity", opacityAnimation);
+        colorAnimation.InsertKeyFrame(0, from, easer);
+        colorAnimation.InsertKeyFrame(1, to, easer);
+        // Set the interpolation to go through the RGB/HSL space.
+        colorAnimation.InterpolationColorSpace = Interpolation;
+        //colorAnimation.Target = "Color";
+        var spriteVisual = compositor.CreateSpriteVisual();
+        if (spriteVisual is null) { return; }
+        /*
+            The ColorKeyFrameAnimation class is one of the supported types of KeyFrameAnimations 
+            that is used to animate the Color property off of the Brush property on a SpriteVisual. 
+            When working with ColorKeyFrameAnimation s, utilize Windows.UI.Color objects for the 
+            values of keyframes. Utilize the InterpolationColorSpace property to define which color 
+            space the system will interpolate through for the animation.
+            https://github.com/MicrosoftDocs/winrt-api/blob/docs//windows.ui.composition/colorkeyframeanimation.md
+        */
+        var ccb = compositor.CreateColorBrush();
+        spriteVisual.CompositeMode = CompositionCompositeMode.MinBlend;
+        spriteVisual.RelativeSizeAdjustment = System.Numerics.Vector2.One;
+        spriteVisual.Brush = ccb;
+        //ccb.StopAnimation("Color");
+        // When using a sprite, the animation will not work unless the child visual is set.
+        ElementCompositionPreview.SetElementChildVisual(element, spriteVisual);
+        ccb.StartAnimation("Color", colorAnimation);
     }
 
     /// <summary>
@@ -280,18 +332,55 @@ public class OpacityAnimationBehavior : Behavior<FrameworkElement>
     #endregion
 }
 
-
-#region [Early Experiments]
 /// <summary>
-/// This <see cref="Microsoft.Xaml.Interactivity.Behavior"/> pattern still needs some fine tuning.
-/// When the <see cref="FrameworkElement"/> receives the focus an opacity and translation animation will be performed.
+/// <see cref="FrameworkElement"/> <see cref="Microsoft.Xaml.Interactivity.Behavior"/>.
 /// </summary>
-public class OpacityAnimationBehaviorExperimental : Behavior<FrameworkElement>
+/// <remarks>
+/// These are the bound events:
+///  - Loaded..........: Applies From/To gradient brush.
+///  - Unloaded........: No brush change.
+///  - PointerEntered..: Applies To/From gradient brush.
+///  - PointerExited...: Applies From/To gradient brush.
+/// </remarks>
+public class ColorGradientBehavior : Behavior<FrameworkElement>
 {
-    DispatcherTimer? _timer;
-    static bool _hasFocus = false;
-    Storyboard? _storyboardOn;
-    Storyboard? _storyboardOff;
+    #region [Props]
+    /// <summary>
+    /// Identifies the <see cref="From"/> property for the animation.
+    /// </summary>
+    public static readonly DependencyProperty FromProperty = DependencyProperty.Register(
+        nameof(From),
+        typeof(Windows.UI.Color),
+        typeof(ColorGradientBehavior),
+        new PropertyMetadata(Microsoft.UI.Colors.Transparent));
+
+    /// <summary>
+    /// Gets or sets the from color.
+    /// </summary>
+    public Windows.UI.Color From
+    {
+        get => (Windows.UI.Color)GetValue(FromProperty);
+        set => SetValue(FromProperty, value);
+    }
+
+    /// <summary>
+    /// Identifies the <see cref="To"/> property for the animation.
+    /// </summary>
+    public static readonly DependencyProperty ToProperty = DependencyProperty.Register(
+        nameof(To),
+        typeof(Windows.UI.Color),
+        typeof(ColorGradientBehavior),
+        new PropertyMetadata(Microsoft.UI.Colors.Transparent));
+
+    /// <summary>
+    /// Gets or sets the to color.
+    /// </summary>
+    public Windows.UI.Color To
+    {
+        get => (Windows.UI.Color)GetValue(ToProperty);
+        set => SetValue(ToProperty, value);
+    }
+    #endregion
 
     protected override void OnAttached()
     {
@@ -302,14 +391,8 @@ public class OpacityAnimationBehaviorExperimental : Behavior<FrameworkElement>
 
         AssociatedObject.Loaded += AssociatedObject_Loaded;
         AssociatedObject.Unloaded += AssociatedObject_Unloaded;
-        AssociatedObject.GotFocus += AssociatedObject_GotFocus;
-        AssociatedObject.LostFocus += AssociatedObject_LostFocus;
-        AssociatedObject.GettingFocus += AssociatedObject_GettingFocus;
-        AssociatedObject.LosingFocus += AssociatedObject_LosingFocus;
-
-        _timer = new DispatcherTimer();
-        _timer.Tick += Timer_Tick;
-        _timer.Interval = TimeSpan.FromMilliseconds(1000);
+        AssociatedObject.PointerEntered += AssociatedObject_PointerEntered;
+        AssociatedObject.PointerExited += AssociatedObject_PointerExited;
     }
 
     protected override void OnDetaching()
@@ -321,202 +404,86 @@ public class OpacityAnimationBehaviorExperimental : Behavior<FrameworkElement>
 
         AssociatedObject.Loaded -= AssociatedObject_Loaded;
         AssociatedObject.Unloaded -= AssociatedObject_Unloaded;
-        AssociatedObject.GotFocus -= AssociatedObject_GotFocus;
-        AssociatedObject.LostFocus -= AssociatedObject_LostFocus;
-        AssociatedObject.GettingFocus -= AssociatedObject_GettingFocus;
-        AssociatedObject.LosingFocus -= AssociatedObject_LosingFocus;
-
-        if (_timer != null)
-        {
-            _timer.Stop();
-            _timer = null;
-        }
-    }
-
-    void Timer_Tick(object? sender, object e)
-    {
-        if (!_hasFocus)
-        {
-            Debug.WriteLine($"[INFO] Running StoryboardOff at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
-            _storyboardOff?.Begin();
-        }
-        _timer?.Stop();
-    }
-
-    void AssociatedObject_GettingFocus(UIElement sender, Microsoft.UI.Xaml.Input.GettingFocusEventArgs args)
-    {
-        Debug.WriteLine($"[INFO] Getting focus at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
-        _hasFocus = true;
-    }
-
-    void AssociatedObject_LosingFocus(UIElement sender, Microsoft.UI.Xaml.Input.LosingFocusEventArgs args)
-    {
-        Debug.WriteLine($"[INFO] Losing focus at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
-
-        if (_timer != null && _timer.IsEnabled)
-            return;
-
-        _hasFocus = false;
-        _timer?.Start();
-    }
-
-    void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
-    {
-        var obj = sender as FrameworkElement;
-        if (obj is null) { return; }
-
-        //AnimateUIElementScale(0.2, TimeSpan.FromSeconds(0.1), (UIElement)sender);
-
-        var daOn = new DoubleAnimation
-        {
-            From = 0.2d,
-            To = 1d,
-            AutoReverse = false,
-            Duration = TimeSpan.FromSeconds(1.3),
-            EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut }
-        };
-
-        var daOff = new DoubleAnimation
-        {
-            From = 1d,
-            To = 0.2d,
-            AutoReverse = false,
-            Duration = TimeSpan.FromSeconds(1.3),
-            EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseInOut }
-        };
-
-        _storyboardOn = new Storyboard();
-        Storyboard.SetTarget(daOn, obj);
-        Storyboard.SetTargetName(daOn, obj.Name);
-        Storyboard.SetTargetProperty(daOn, "Opacity");
-        _storyboardOn.Children.Add(daOn);
-
-        _storyboardOff = new Storyboard();
-        Storyboard.SetTarget(daOff, obj);
-        Storyboard.SetTargetName(daOff, obj.Name);
-        Storyboard.SetTargetProperty(daOff, "Opacity");
-        _storyboardOff.Children.Add(daOff);
-        _storyboardOff.Completed += StoryboardOffCompleted;
-    }
-
-    void StoryboardOffCompleted(object? sender, object e)
-    {
-        _timer?.Stop();
-    }
-
-    void AssociatedObject_GotFocus(object sender, RoutedEventArgs e)
-    {
-        Debug.WriteLine($"[INFO] {sender.GetType()} got focus.");
-
-        if (_timer != null && _timer.IsEnabled)
-        {
-            Debug.WriteLine($"[INFO] Skipping StoryBoardOn since timer is running.");
-            return;
-        }
-
-        var obj = sender as FrameworkElement;
-        if (obj is null) { return; }
-
-        if (obj.Visibility == Visibility.Visible)
-            _storyboardOn?.Begin();
-        else
-            _storyboardOn?.SkipToFill(); //_storyboard.Stop();
-
-        //AnimateUIElementOpacity(0.1, 1.0, TimeSpan.FromSeconds(2.0), obj);
-        //AnimateUIElementScale(1.0, TimeSpan.FromSeconds(1.0), (UIElement)sender);
-        if (obj.ActualHeight != double.NaN && obj.ActualHeight != 0)
-            AnimateUIElementOffset(new Point(0, obj.ActualHeight), TimeSpan.FromSeconds(0.8), (UIElement)sender);
-        else
-            AnimateUIElementOffset(new Point(0, 600), TimeSpan.FromSeconds(0.8), (UIElement)sender);
-    }
-
-    void AssociatedObject_LostFocus(object sender, RoutedEventArgs e)
-    {
-        Debug.WriteLine($"[INFO] {sender.GetType()} lost focus.");
-
-        //var obj = sender as FrameworkElement;
-        //if (obj is null) { return; }
-        //
-        //if (obj.Visibility == Visibility.Visible)
-        //    _storyboardOff?.Begin();
-        //else
-        //    _storyboardOff?.SkipToFill();
-    }
-
-    void AssociatedObject_Activated(object sender, WindowActivatedEventArgs args)
-    {
+        AssociatedObject.PointerEntered -= AssociatedObject_PointerEntered;
+        AssociatedObject.PointerExited -= AssociatedObject_PointerExited;
     }
 
     /// <summary>
-    /// Mock disposal routine.
+    /// <see cref="FrameworkElement"/> event.
+    /// </summary>
+    void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
+    {
+        Debug.WriteLine($"[INFO] {sender.GetType().Name} loaded at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
+        AnimateUIElementColor(From, To, (UIElement)sender);
+    }
+
+    /// <summary>
+    /// <see cref="FrameworkElement"/> event.
     /// </summary>
     void AssociatedObject_Unloaded(object sender, RoutedEventArgs e)
     {
-        if (_storyboardOn != null)
-        {
-            _storyboardOn.Stop();
-            _storyboardOn = null;
-        }
-
-        if (_storyboardOff != null)
-        {
-            _storyboardOff.Stop();
-            _storyboardOff = null;
-        }
-
-        if (_timer != null)
-        {
-            _timer.Stop();
-            _timer = null;
-        }
+        Debug.WriteLine($"[INFO] {sender.GetType().Name} unloaded at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
     }
 
     /// <summary>
-    /// Opacity animation using <see cref="Microsoft.UI.Composition.ScalarKeyFrameAnimation"/>
+    /// <see cref="FrameworkElement"/> event.
     /// </summary>
-    void AnimateUIElementOpacity(double from, double to, TimeSpan duration, UIElement target, Microsoft.UI.Composition.AnimationDirection direction = Microsoft.UI.Composition.AnimationDirection.Normal)
+    void AssociatedObject_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-        var targetVisual = ElementCompositionPreview.GetElementVisual(target);
-        var compositor = targetVisual.Compositor;
-        var opacityAnimation = compositor.CreateScalarKeyFrameAnimation();
-        opacityAnimation.Direction = direction;
-        opacityAnimation.Duration = duration;
-        opacityAnimation.Target = "Opacity";
-        opacityAnimation.InsertKeyFrame(0.0f, (float)from);
-        opacityAnimation.InsertKeyFrame(1.0f, (float)to);
-        targetVisual.StartAnimation("Opacity", opacityAnimation);
+        AnimateUIElementColor(To, From, (UIElement)sender);
     }
 
     /// <summary>
-    /// Offset animation using <see cref="Microsoft.UI.Composition.Vector3KeyFrameAnimation"/>
+    /// <see cref="FrameworkElement"/> event.
     /// </summary>
-    void AnimateUIElementOffset(Point to, TimeSpan duration, UIElement target)
+    void AssociatedObject_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-        var targetVisual = ElementCompositionPreview.GetElementVisual(target);
-        var compositor = targetVisual.Compositor;
-        var linear = compositor.CreateLinearEasingFunction();
-        var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
-        offsetAnimation.Duration = duration;
-        offsetAnimation.Target = "Offset";
-        offsetAnimation.InsertKeyFrame(0.0f, new Vector3((float)to.X, (float)to.Y, 0), linear);
-        offsetAnimation.InsertKeyFrame(1.0f, new Vector3(0), linear);
-        targetVisual.StartAnimation("Offset", offsetAnimation);
+        AnimateUIElementColor(From, To, (UIElement)sender);
     }
 
+    #region [Composition Animations]
     /// <summary>
-    /// Scale animation using <see cref="Microsoft.UI.Composition.Vector3KeyFrameAnimation"/>
+    /// This provides a gradient brush effect, but it's not an animation.
+    /// Only a <see cref="Microsoft.UI.Composition.CompositionColorBrush"/> can be animated.
+    /// https://github.com/MicrosoftDocs/winrt-api/blob/docs/windows.ui.composition/compositionobject_startanimation_709050842.md
     /// </summary>
-    void AnimateUIElementScale(double to, TimeSpan duration, UIElement target)
+    void AnimateUIElementColor(Windows.UI.Color from, Windows.UI.Color to, UIElement element)
     {
-        var targetVisual = ElementCompositionPreview.GetElementVisual(target);
+        var targetVisual = ElementCompositionPreview.GetElementVisual(element);
+        if (targetVisual is null) { return; }
         var compositor = targetVisual.Compositor;
-        var linear = compositor.CreateLinearEasingFunction();
-        var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
-        scaleAnimation.Duration = duration;
-        scaleAnimation.Target = "Scale";
-        scaleAnimation.InsertKeyFrame(0.0f, new Vector3(0), linear);
-        scaleAnimation.InsertKeyFrame(1.0f, new Vector3((float)to), linear);
-        targetVisual.StartAnimation("Scale", scaleAnimation);
+        var spriteVisual = compositor.CreateSpriteVisual();
+        if (spriteVisual is null) { return; }
+
+        var gb = compositor.CreateLinearGradientBrush();
+        // Define gradient stops.
+        var gradientStops = gb.ColorStops;
+        gradientStops.Insert(0, compositor.CreateColorGradientStop(0.0f, from));
+        gradientStops.Insert(1, compositor.CreateColorGradientStop(1.0f, to));
+
+        // Set the direction of the gradient (top to bottom).
+        gb.StartPoint = new System.Numerics.Vector2(0, 0);
+        gb.EndPoint = new System.Numerics.Vector2(0, 1);
+
+        // Bitmap and clip edges are antialiased.
+        spriteVisual.BorderMode = CompositionBorderMode.Soft;
+
+        // Subtract color channels in background.
+        spriteVisual.CompositeMode = CompositionCompositeMode.MinBlend;
+
+        // Set the size of the sprite visual to cover the element.
+        spriteVisual.RelativeSizeAdjustment = System.Numerics.Vector2.One;
+        // Or you can be more specific:
+        //spriteVisual.Offset = new System.Numerics.Vector3(1, 1, 0);
+        //spriteVisual.Size = new System.Numerics.Vector2((float)element.ActualSize.X-2, (float)element.ActualSize.Y-2);
+
+        spriteVisual.Brush = gb;
+        // This throws an exception:
+        //spriteVisual.Brush.StartAnimation("Color", colorAnimation);
+
+        // Set the sprite visual as the background of the FrameworkElement.
+        ElementCompositionPreview.SetElementChildVisual(element, spriteVisual);
     }
+    #endregion
 }
-#endregion
+

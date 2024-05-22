@@ -30,7 +30,7 @@ public class SpringAnimationBehavior : Behavior<FrameworkElement>
     public static readonly DependencyProperty SecondsProperty = DependencyProperty.Register(
         nameof(Seconds),
         typeof(double),
-        typeof(SlideAnimationBehavior),
+        typeof(SpringAnimationBehavior),
         new PropertyMetadata(1.25d));
 
     /// <summary>
@@ -48,7 +48,7 @@ public class SpringAnimationBehavior : Behavior<FrameworkElement>
     public static readonly DependencyProperty FinalProperty = DependencyProperty.Register(
         nameof(Final),
         typeof(double),
-        typeof(SlideAnimationBehavior),
+        typeof(SpringAnimationBehavior),
         new PropertyMetadata(1d));
 
     /// <summary>
@@ -66,7 +66,7 @@ public class SpringAnimationBehavior : Behavior<FrameworkElement>
     public static readonly DependencyProperty DampingProperty = DependencyProperty.Register(
         nameof(Damping),
         typeof(double),
-        typeof(SlideAnimationBehavior),
+        typeof(SpringAnimationBehavior),
         new PropertyMetadata(0.25f));
 
     /// <summary>
