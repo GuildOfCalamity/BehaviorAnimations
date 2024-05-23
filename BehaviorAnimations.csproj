@@ -60,6 +60,7 @@
       <DefineConstants>IS_UNPACKAGED</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\click.mp3" />
     <None Remove="Assets\Fonts\Aptos.ttf" />
     <None Remove="Assets\Fonts\OdinRounded.ttf" />
     <None Remove="Assets\Spinner.png" />

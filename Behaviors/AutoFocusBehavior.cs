@@ -17,6 +17,15 @@ public sealed class AutoFocusBehavior : BehaviorBase<Control>
     /// <inheritdoc/>
     protected override void OnAssociatedObjectLoaded() => AssociatedObject.Focus(FocusState.Programmatic);
 }
+
+/// <summary>
+/// This is only for testing the <see cref="BehaviorWorkaround{T}"/> class.
+/// </summary>
+public sealed class AutoFocusBehaviorWorkaround : BehaviorWorkaround<Control>
+{
+    /// <inheritdoc/>
+    protected override void OnAttached() => AssociatedObject.Focus(FocusState.Programmatic);
+}
 #endregion
 
 #region [Focus]

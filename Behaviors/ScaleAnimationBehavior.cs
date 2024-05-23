@@ -126,15 +126,13 @@ public class ScaleAnimationBehavior : Behavior<FrameworkElement>
         Microsoft.UI.Composition.CompositionEasingFunction easer;
         var targetVisual = ElementCompositionPreview.GetElementVisual(target);
         if (targetVisual is null) { return; }
-        //targetVisual.Size = new Vector2((float)target.ActualSize.Y, (float)target.ActualSize.X);
 
-        Debug.WriteLine($"[DEBUG] RelativeOffsetAdjustment: {targetVisual.RelativeOffsetAdjustment}");
-        //var targetX = targetVisual.RelativeOffsetAdjustment.X == 0 ? 1 : 0;
-        //targetVisual.AnchorPoint = new Vector2(targetX, 0);
+        //targetVisual.Size = new Vector2(target.ActualSize.X, target.ActualSize.Y);
+        //targetVisual.AnchorPoint = new Vector2(-1f, -1f); // used mostly in rotation angle, not scaling
+        //targetVisual.RelativeOffsetAdjustment = new Vector3(1f, 0f, 0f);
 
-        // You may need to adjust the margin of the UIElement since we'll scale from the center.
-        targetVisual.AnchorPoint = new Vector2(0.5f, 0.5f);
-
+        // This is very important for the effect to work properly.
+        targetVisual.CenterPoint = new Vector3(target.ActualSize.X / 2f, target.ActualSize.Y / 2f, 0f);
 
         var compositor = targetVisual.Compositor;
         var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();

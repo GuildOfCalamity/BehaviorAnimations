@@ -6,28 +6,21 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.UI.Xaml.Shapes;
 using Microsoft.Xaml.Interactivity;
 
 using Windows.Foundation;
 using Windows.UI.Core.AnimationMetrics;
 
+
 namespace BehaviorAnimations.Behaviors;
 
 /// <summary>
-/// <see cref="FrameworkElement"/> <see cref="Microsoft.Xaml.Interactivity.Behavior"/>.
+/// <see cref="Microsoft.UI.Xaml.Controls.Button"/> <see cref="Microsoft.Xaml.Interactivity.Behavior"/>.
 /// </summary>
-/// <remarks>
-/// These are the bound events:
-///  - Loaded.....: Will begin the rotation animation.
-///  - Unloaded...: Will stop the rotation animation.
-///  - Visible....: Will begin the rotation animation.
-///  - Collapsed..: Will stop the rotation animation.
-/// </remarks>
-public class RotationAnimationBehavior : Behavior<FrameworkElement>
+public class ButtonAnimationBehavior : Behavior<Button>
 {
     #region [Props]
-    long? _ivToken;
+    static bool _reversing = false;
 
     /// <summary>
     /// Identifies the <see cref="Seconds"/> property for the animation.
@@ -35,7 +28,7 @@ public class RotationAnimationBehavior : Behavior<FrameworkElement>
     public static readonly DependencyProperty SecondsProperty = DependencyProperty.Register(
         nameof(Seconds),
         typeof(double),
-        typeof(RotationAnimationBehavior),
+        typeof(InfoBarOpacityBehavior),
         new PropertyMetadata(1.25d));
 
     /// <summary>
@@ -48,23 +41,22 @@ public class RotationAnimationBehavior : Behavior<FrameworkElement>
     }
 
     /// <summary>
-    /// Identifies the <see cref="Direction"/> property for the animation.
+    /// Identifies the <see cref="Final"/> property for the animation.
     /// </summary>
-    public static readonly DependencyProperty DirectionProperty = DependencyProperty.Register(
-        nameof(Direction),
-        typeof(string),
-        typeof(RotationAnimationBehavior),
-        new PropertyMetadata("Normal"));
+    public static readonly DependencyProperty FinalProperty = DependencyProperty.Register(
+        nameof(Final),
+        typeof(double),
+        typeof(InfoBarOpacityBehavior),
+        new PropertyMetadata(1d));
 
     /// <summary>
-    /// Gets or sets the direction for the compositor.
+    /// Gets or sets the amount.
     /// </summary>
-    public string Direction
+    public double Final
     {
-        get => (string)GetValue(DirectionProperty);
-        set => SetValue(DirectionProperty, value);
+        get => (double)GetValue(FinalProperty);
+        set => SetValue(FinalProperty, value);
     }
-
 
     /// <summary>
     /// Identifies the <see cref="EaseMode"/> property for the animation.
@@ -72,7 +64,7 @@ public class RotationAnimationBehavior : Behavior<FrameworkElement>
     public static readonly DependencyProperty EaseModeProperty = DependencyProperty.Register(
         nameof(EaseMode),
         typeof(string),
-        typeof(RotationAnimationBehavior),
+        typeof(InfoBarOpacityBehavior),
         new PropertyMetadata("Linear"));
 
     /// <summary>
@@ -92,8 +84,7 @@ public class RotationAnimationBehavior : Behavior<FrameworkElement>
         if (!App.AnimationsEffectsEnabled)
             return;
 
-        _ivToken = AssociatedObject.RegisterPropertyChangedCallback(FrameworkElement.VisibilityProperty, VisibilityChanged);
-
+        AssociatedObject.Click += AssociatedObject_Click;
         AssociatedObject.Loaded += AssociatedObject_Loaded;
         AssociatedObject.Unloaded += AssociatedObject_Unloaded;
     }
@@ -105,86 +96,84 @@ public class RotationAnimationBehavior : Behavior<FrameworkElement>
         if (!App.AnimationsEffectsEnabled)
             return;
 
-        if (_ivToken != null)
-            AssociatedObject.UnregisterPropertyChangedCallback(FrameworkElement.VisibilityProperty, (long)_ivToken);
-
+        AssociatedObject.Click -= AssociatedObject_Click;
         AssociatedObject.Loaded -= AssociatedObject_Loaded;
         AssociatedObject.Unloaded -= AssociatedObject_Unloaded;
     }
 
-    /// <summary>
-    /// Callback for <see cref="FrameworkElement.VisibilityProperty"/> change.
-    /// </summary>
-    void VisibilityChanged(DependencyObject o, DependencyProperty p)
+    void AssociatedObject_Click(object sender, RoutedEventArgs e)
     {
-        var obj = o as FrameworkElement;
-
-        if (obj == null || p != FrameworkElement.VisibilityProperty)
-            return;
-
-        if (obj.Visibility == Visibility.Visible)
-            AnimateUIElementRotate(TimeSpan.FromSeconds(Seconds), obj, Direction, EaseMode, false);
-        else
-            AnimateUIElementRotate(TimeSpan.FromSeconds(Seconds), obj, Direction, EaseMode, true);
+        _reversing = false;
+        AnimateUIElementScale(Final, TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
     }
 
-    /// <summary>
-    /// <see cref="FrameworkElement"/> event.
-    /// </summary>
     void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
     {
         Debug.WriteLine($"[INFO] {sender.GetType().Name} loaded at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
-        AnimateUIElementRotate(TimeSpan.FromSeconds(Seconds), (UIElement)sender, Direction, EaseMode, false);
     }
 
     /// <summary>
-    /// <see cref="FrameworkElement"/> event.
+    /// Mock disposal routine.
     /// </summary>
     void AssociatedObject_Unloaded(object sender, RoutedEventArgs e)
     {
         Debug.WriteLine($"[INFO] {sender.GetType().Name} unloaded at {DateTime.Now.ToString("hh:mm:ss.fff tt")}");
-        AnimateUIElementRotate(TimeSpan.FromSeconds(Seconds), (UIElement)sender, Direction, EaseMode, true);
     }
 
     #region [Composition Animations]
     /// <summary>
-    /// Rotation animation using <see cref="Microsoft.UI.Composition.ScalarKeyFrameAnimation"/> and expression key frames.
+    /// Scale animation using <see cref="Microsoft.UI.Composition.Vector3KeyFrameAnimation"/>
     /// </summary>
-    void AnimateUIElementRotate(TimeSpan duration, UIElement target, string direction, string ease, bool stop = false)
+    void AnimateUIElementScale(double to, TimeSpan duration, UIElement target, string ease, Microsoft.UI.Composition.AnimationDirection direction = Microsoft.UI.Composition.AnimationDirection.Normal)
     {
+        Microsoft.UI.Composition.CompositionEasingFunction easer;
         var targetVisual = ElementCompositionPreview.GetElementVisual(target);
         if (targetVisual is null) { return; }
 
-        if (stop)
-        {
-            targetVisual.StopAnimation("RotationAngleInDegrees");
-            return;
-        }
+        // Instead of calculating the parent bounds for setting the AnchorPoint, it's easier just
+        // to place the button inside a Grid/StackPanel when using Vertical/Horizontal alignments.
 
-        targetVisual.AnchorPoint = new Vector2(0.5f, 0.5f);
-        Microsoft.UI.Composition.CompositionEasingFunction easer;
+        //targetVisual.Size = new Vector2(target.ActualSize.X, target.ActualSize.Y);
+        //targetVisual.AnchorPoint = new Vector2(-1f, -1f); // used mostly in rotation angle, not scaling
+        //targetVisual.RelativeOffsetAdjustment = new Vector3(1f, 0f, 0f);
+
+        // This is very important for the effect to work properly.
+        targetVisual.CenterPoint = new Vector3(target.ActualSize.X/2f, target.ActualSize.Y/2f, 0f);
+
         var compositor = targetVisual.Compositor;
-        var rotateAnimation = compositor.CreateScalarKeyFrameAnimation();
-        var linear = compositor.CreateLinearEasingFunction();
+        var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
+        scaleAnimation.StopBehavior = Microsoft.UI.Composition.AnimationStopBehavior.SetToFinalValue;
+        scaleAnimation.Direction = direction;
+        scaleAnimation.Duration = duration;
+        scaleAnimation.Target = "Scale";
 
         if (string.IsNullOrEmpty(ease) || ease.Contains("linear", StringComparison.CurrentCultureIgnoreCase))
             easer = compositor.CreateLinearEasingFunction();
         else
             easer = CreatePennerEquation(compositor, ease);
 
-        rotateAnimation.InsertExpressionKeyFrame(0.0f, "this.StartingValue");
-        if (string.IsNullOrEmpty(direction) || direction.Contains("normal", StringComparison.CurrentCultureIgnoreCase))
-            rotateAnimation.InsertExpressionKeyFrame(1.0f, "this.StartingValue + 360f", easer);
-        else
-            rotateAnimation.InsertExpressionKeyFrame(1.0f, "this.StartingValue - 360f", easer);
+        scaleAnimation.InsertKeyFrame(0.0f, new Vector3(1,1,1), easer);
+        scaleAnimation.InsertKeyFrame(1.0f, new Vector3((float)to), easer);
 
-        rotateAnimation.StopBehavior = Microsoft.UI.Composition.AnimationStopBehavior.SetToFinalValue;
-        rotateAnimation.Duration = duration;
-        rotateAnimation.IterationBehavior = Microsoft.UI.Composition.AnimationIterationBehavior.Forever;
+        // Create a scoped batch so we can setup a completed event.
+        var batch = targetVisual.Compositor.CreateScopedBatch(Microsoft.UI.Composition.CompositionBatchTypes.Animation);
+        batch.Completed += (s, e) =>
+        {
+            Debug.WriteLine($"[INFO] Scale animation completed for {target.GetType().Name}");
+            if (!_reversing)
+            {
+                _reversing = true;
+                AnimateUIElementScale(Final, TimeSpan.FromSeconds(Seconds), target, EaseMode, Microsoft.UI.Composition.AnimationDirection.Reverse);
+            }
+        };
 
-        //ElementCompositionPreview.SetIsTranslationEnabled(target, true);
+        targetVisual.StartAnimation("Offset", scaleAnimation);
 
-        targetVisual.StartAnimation("RotationAngleInDegrees", rotateAnimation);
+        // You must call End to get the completed event to fire.
+        batch.End();
+
+
+        targetVisual.StartAnimation("Scale", scaleAnimation);
     }
 
     /// <summary>

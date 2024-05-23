@@ -8,9 +8,25 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:interact="using:Microsoft.Xaml.Interactivity"
     xmlns:interactcore="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:interactmedia="using:Microsoft.Xaml.Interactions.Media"
     xmlns:local="using:BehaviorAnimations"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+    <!--
+        [Behavior Documentation]
+        https://github.com/Microsoft/XamlBehaviors/wiki/EventTriggerBehavior
+        https://github.com/Microsoft/XamlBehaviors/wiki/CallMethodAction
+        https://github.com/Microsoft/XamlBehaviors/wiki/ChangePropertyAction
+        https://github.com/Microsoft/XamlBehaviors/wiki/ControlStoryboardAction
+        https://github.com/Microsoft/XamlBehaviors/wiki/DataTriggerBehavior
+        https://github.com/Microsoft/XamlBehaviors/wiki/GoToStateAction
+        https://github.com/Microsoft/XamlBehaviors/wiki/IncrementalUpdateBehavior
+        https://github.com/Microsoft/XamlBehaviors/wiki/InvokeCommandAction
+        https://github.com/Microsoft/XamlBehaviors/wiki/NavigateToPageAction
+        https://github.com/Microsoft/XamlBehaviors/wiki/PlaySoundAction
+        [Event Names]
+        https://learn.microsoft.com/en-us/dotnet/api/system.windows.controls.grid?view=windowsdesktop-9.0#events
+    -->
     <Grid
         x:Name="root"
         HorizontalAlignment="Stretch"
@@ -92,6 +108,23 @@
                         <Style TargetType="TextBlock">
                             <Setter Property="FontFamily" Value="{StaticResource PrimaryFont}" />
                         </Style>
+                        <Storyboard
+                            x:Name="StoryboardTranslation"
+                            AutoReverse="True"
+                            RepeatBehavior="Forever">
+                            <DoubleAnimation
+                                d:IsOptimized="True"
+                                Storyboard.TargetName="Translation1"
+                                Storyboard.TargetProperty="X"
+                                To="10"
+                                Duration="0:0:1.5" />
+                            <DoubleAnimation
+                                d:IsOptimized="True"
+                                Storyboard.TargetName="Translation1"
+                                Storyboard.TargetProperty="Y"
+                                To="10"
+                                Duration="0:0:1.5" />
+                        </Storyboard>
                     </StackPanel.Resources>
                     <Grid Grid.Row="0">
                         <Grid.ColumnDefinitions>
@@ -123,7 +156,7 @@
                             Grid.Column="1"
                             Width="60"
                             Height="60"
-                            Margin="1,40,1,1"
+                            Margin="1"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Source="ms-appx:///Assets/StoreLogo.png">
@@ -192,9 +225,47 @@
                                 <!--<interactcore:InvokeCommandAction Command="{x:Bind ViewModel.KeyDownCommand}" CommandParameter="{x:Bind root}" />-->
                                 <!--<interactcore:ChangePropertyAction PropertyName="Margin" TargetObject="{x:Bind root}" Value="30" />-->
                             </behave:KeyDownTriggerBehavior>
+                            <interactcore:EventTriggerBehavior EventName="KeyDown">
+                                <interactcore:ChangePropertyAction
+                                    PropertyName="Fill"
+                                    TargetObject="{Binding ElementName=BehaviorRectangle}"
+                                    Value="{StaticResource BC1}" />
+                            </interactcore:EventTriggerBehavior>
+                            <interactcore:EventTriggerBehavior EventName="KeyUp">
+                                <interactcore:ChangePropertyAction
+                                    PropertyName="Fill"
+                                    TargetObject="{Binding ElementName=BehaviorRectangle}"
+                                    Value="{StaticResource BC2}" />
+                            </interactcore:EventTriggerBehavior>
+                            <interactcore:EventTriggerBehavior EventName="GotFocus">
+                                <interactcore:ChangePropertyAction
+                                    PropertyName="Fill"
+                                    TargetObject="{Binding ElementName=BehaviorRectangle}"
+                                    Value="{StaticResource BC3}" />
+                            </interactcore:EventTriggerBehavior>
+                            <interactcore:EventTriggerBehavior EventName="LostFocus">
+                                <interactcore:ChangePropertyAction
+                                    PropertyName="Fill"
+                                    TargetObject="{Binding ElementName=BehaviorRectangle}"
+                                    Value="{StaticResource BC4}" />
+                            </interactcore:EventTriggerBehavior>
                         </interact:Interaction.Behaviors>
                     </TextBox>
                     <!--#endregion-->
+
+                    <Rectangle
+                        x:Name="BehaviorRectangle"
+                        Width="170"
+                        Height="8"
+                        Margin="1,0,0,0"
+                        HorizontalAlignment="Left"
+                        Fill="{StaticResource GC4}"
+                        RadiusX="3"
+                        RadiusY="3">
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform x:Name="Translation1" />
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
 
                     <!--#region [KeyDown Behavior Test Using InvokeCommandAction]-->
                     <TextBox
@@ -216,6 +287,14 @@
                                 <!--<interactcore:CallMethodAction MethodName="SomePublicMethodHere" TargetObject="{x:Bind}" />-->
                                 <!--<interactcore:ChangePropertyAction PropertyName="Margin" TargetObject="{x:Bind root}" Value="30" />-->
                             </behave:KeyDownTriggerBehavior>
+                            <interactcore:EventTriggerBehavior EventName="KeyDown">
+                                <!--
+                                    <media:PlaySoundAction Source="Assets/click.mp3" Volume="1" />
+                                    This appears to have been removed from the current Interactions library ⇒ https://learn.microsoft.com/en-us/previous-versions/dn458246(v=vs.120)
+                                    I've opened an issue for it here ⇒ https://github.com/microsoft/XamlBehaviors/issues/252
+                                -->
+                                <interactmedia:ControlStoryboardAction ControlStoryboardOption="TogglePlayPause" Storyboard="{StaticResource StoryboardTranslation}" />
+                            </interactcore:EventTriggerBehavior>
                         </interact:Interaction.Behaviors>
                     </TextBox>
                     <!--#endregion-->
@@ -231,6 +310,12 @@
                         OffContent="Option Disabled"
                         OnContent="Option Enabled">
                         <interact:Interaction.Behaviors>
+                            <interactcore:DataTriggerBehavior Binding="{Binding IsOn, ElementName=tsSample}" Value="False">
+                                <interactcore:GoToStateAction
+                                    StateName="Disabled"
+                                    TargetObject="{Binding ElementName=btn}"
+                                    UseTransitions="False" />
+                            </interactcore:DataTriggerBehavior>
                             <interactcore:EventTriggerBehavior EventName="PointerEntered">
                                 <interactcore:ChangePropertyAction
                                     PropertyName="Header"
@@ -258,6 +343,22 @@
                         Orientation="Horizontal"
                         Spacing="10">
                         <Button
+                            MinWidth="120"
+                            Content="Scale Click"
+                            FontFamily="{ThemeResource PrimaryFont}"
+                            FontSize="{ThemeResource FontSizeMedium}">
+                            <interact:Interaction.Behaviors>
+                                <!--
+                                    This effect can jump if not enclosed inside a parent container, e.g. a Grid/StackPanel
+                                -->
+                                <behave:ButtonAnimationBehavior
+                                    EaseMode="QuadEaseOut"
+                                    Final="0.8"
+                                    Seconds="0.08" />
+                            </interact:Interaction.Behaviors>
+                        </Button>
+                        <Button
+                            x:Name="btn"
                             MinWidth="120"
                             Content="Color Animation"
                             FontFamily="{ThemeResource PrimaryFont}"
@@ -310,10 +411,11 @@
 
                 <!--#region [Rotation Animation Test]-->
                 <Border
+                    x:Name="brdr"
                     Grid.Column="1"
                     Width="120"
                     Height="120"
-                    Margin="0,10,0,0"
+                    Margin="0,-10,0,0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     BorderBrush="{ThemeResource GradientBorderBrush}"
@@ -332,9 +434,25 @@
                     </Image>
                     <interact:Interaction.Behaviors>
                         <behave:RotationAnimationBehavior
+                            x:Name="rab"
                             Direction="Reverse"
                             EaseMode="Linear"
                             Seconds="9.0" />
+                        <!--
+                            https://github.com/Microsoft/XamlBehaviors/wiki/DataTriggerBehavior
+                        -->
+                        <interactcore:DataTriggerBehavior
+                            Binding="{Binding Value, ElementName=sldr}"
+                            ComparisonCondition="LessThanOrEqual"
+                            Value="30">
+                            <!--
+                                We'll only set the BorderThickness if the slider value is less than or equal to 30.
+                            -->
+                            <interactcore:ChangePropertyAction
+                                PropertyName="BorderThickness"
+                                TargetObject="{Binding ElementName=brdr}"
+                                Value="{Binding Value, ElementName=sldr}" />
+                        </interactcore:DataTriggerBehavior>
                     </interact:Interaction.Behaviors>
                 </Border>
                 <!--#endregion-->

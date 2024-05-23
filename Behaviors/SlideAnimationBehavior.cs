@@ -236,6 +236,8 @@ public class SlideAnimationBehavior : Behavior<FrameworkElement>
             }
         };
 
+        //ElementCompositionPreview.SetIsTranslationEnabled(target, true);
+
         targetVisual.StartAnimation("Offset", offsetAnimation);
 
         // You must call End to get the completed event to fire.

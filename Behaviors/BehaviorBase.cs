@@ -1,5 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.Xaml.Interactivity;
+using System;
+using Windows.ApplicationModel;
 
 namespace BehaviorAnimations.Behaviors;
 
@@ -71,6 +73,7 @@ public abstract class BehaviorBase<T> : Behavior<T> where T : UIElement
         HandleDetach();
     }
 
+    #region [Overridable Methods]
     /// <summary>
     /// Called when the associated object has been loaded.
     /// </summary>
@@ -102,6 +105,7 @@ public abstract class BehaviorBase<T> : Behavior<T> where T : UIElement
     {
         return true;
     }
+    #endregion
 
     void OnAssociatedObjectLoaded(object sender, RoutedEventArgs e)
     {
@@ -147,4 +151,73 @@ public abstract class BehaviorBase<T> : Behavior<T> where T : UIElement
         if (detached)
             _isAttached = false;
     }
+}
+
+/// <summary>
+/// WinUI3 currently (as of WindowsAppSdk 1.5) has a bug where Unloaded can fire out of order with Loaded, 
+/// causing OnDetaching to be called on a behavior without OnAttached being called, but the object is still in use. 
+/// A detailed explanation of what's going on in WinUI3 can be found here https://github.com/microsoft/microsoft-ui-xaml/issues/8342#issuecomment-2031017667
+/// and a fix is expected  in the WindowsAppSdk 2.0 time-frame (undecided). This Loaded/Unloaded issue crops up 
+/// frequently in areas that use control virtualization, particularly things like ListView and AutoSuggestBox.
+/// The current workaround I've added is to implement a custom Behavior class to use instead of using the one built 
+/// in to the framework, which checks AssociatedObject.IsLoaded and only detaches if the object is no longer loaded.
+/// https://github.com/microsoft/XamlBehaviors/issues/251
+/// </summary>
+/// <typeparam name="T"><see cref="DependencyObject"/></typeparam>
+public abstract class BehaviorWorkaround<T> : DependencyObject, IBehavior where T : DependencyObject
+{
+    protected BehaviorWorkaround()
+    {
+        AssociatedObject = null;
+    }
+
+    DependencyObject IBehavior.AssociatedObject => AssociatedObject;
+
+    public T AssociatedObject
+    {
+        get;
+        private set;
+    }
+
+    public void Attach(DependencyObject? associatedObject)
+    {
+        if (associatedObject == null || ReferenceEquals(associatedObject, AssociatedObject) || DesignMode.DesignModeEnabled)
+        {
+            // do nothing, object is already attached
+        }
+        else if (associatedObject is T typedObject)
+        {
+            AssociatedObject = typedObject;
+            OnAttached();
+        }
+        else
+        {
+            throw new InvalidOperationException($"AssociatedObject is expected to be type {typeof(T).FullName} but was {associatedObject.GetType().FullName}");
+        }
+    }
+
+    public void Detach()
+    {
+        if (AssociatedObject is FrameworkElement { IsLoaded: true } element)
+        {
+            // This case happens when the control is removed from the visual tree and added back before the Unloaded event is fired.
+            // Details on why this happens can be found here: https://github.com/microsoft/microsoft-ui-xaml/issues/8342#issuecomment-2031017667
+            // This bug is expected to be fixed in the WindowsAppSdk 2.0 time-frame, at which point this workaround can be removed.
+        }
+        else
+        {
+            OnDetaching();
+            AssociatedObject = default!;
+        }
+    }
+
+    #region [Overridable Methods]
+    protected virtual void OnAttached()
+    {
+    }
+
+    protected virtual void OnDetaching()
+    {
+    }
+    #endregion
 }

@@ -105,6 +105,14 @@ public static class Extensions
         return source;
     }
 
+    public static bool IsXamlRootAvailable(bool UWP = false)
+    {
+        if (UWP)
+            return Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Windows.UI.Xaml.UIElement", "XamlRoot");
+        else
+            return Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.UIElement", "XamlRoot");
+    }
+
     /// <summary>
     /// Multiplies the given <see cref="TimeSpan"/> by the scalar amount provided.
     /// </summary>

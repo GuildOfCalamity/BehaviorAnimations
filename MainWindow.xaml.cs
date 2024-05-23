@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.Xaml.Interactions.Media;
 
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -35,10 +36,11 @@ public sealed partial class MainWindow : Window
     {
         this.InitializeComponent();
         this.ExtendsContentIntoTitleBar = true;
-        this.Title = "Behavior Animations";
-        SetTitleBar(CustomTitleBar);
+        this.Title = $"{App.GetCurrentNamespace()}";
         this.Activated += MainWindow_Activated;
         this.Closed += MainWindow_Closed;
+        SetTitleBar(CustomTitleBar);
+
         var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this); // Retrieve the window handle (HWND) of the current (XAML) WinUI3 window.
         Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd); // Retrieve the WindowId that corresponds to hWnd.
         appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId); // Lastly, retrieve the AppWindow for the current (XAML) WinUI3 window.
@@ -68,10 +70,10 @@ public sealed partial class MainWindow : Window
         }
         else
         {
-            //if (App.Current.Resources.TryGetValue("ApplicationPageBackgroundThemeBrush", out object brsh))
-            //    root.Background = (SolidColorBrush)App.Current.Resources["ApplicationPageBackgroundThemeBrush"];
+            //if (App.Current.Resources.TryGetValue("ApplicationPageBackgroundThemeBrush", out object _))
+            //    root.Background = (Microsoft.UI.Xaml.Media.SolidColorBrush)App.Current.Resources["ApplicationPageBackgroundThemeBrush"];
             //else
-            //    root.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 20, 20, 20));
+            //    root.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 20, 20, 20));
 
             CreateGradientBackdrop(root);
         }
@@ -99,16 +101,20 @@ public sealed partial class MainWindow : Window
         // Define gradient stops.
         var gradientStops = gb.ColorStops;
 
-        if (App.Current.Resources.TryGetValue("GC1", out object clr))
+        // If we found our App.xaml brushes then use them.
+        if (App.Current.Resources.TryGetValue("GC1", out object clr1) &&
+            App.Current.Resources.TryGetValue("GC2", out object clr2) &&
+            App.Current.Resources.TryGetValue("GC3", out object clr3) &&
+            App.Current.Resources.TryGetValue("GC4", out object clr4))
         {
-            var clr1 = (Windows.UI.Color)App.Current.Resources["GC1"];
-            var clr2 = (Windows.UI.Color)App.Current.Resources["GC2"];
-            var clr3 = (Windows.UI.Color)App.Current.Resources["GC3"];
-            var clr4 = (Windows.UI.Color)App.Current.Resources["GC4"];
-            gradientStops.Insert(0, compositor.CreateColorGradientStop(0.0f, clr1));
-            gradientStops.Insert(1, compositor.CreateColorGradientStop(0.3f, clr2));
-            gradientStops.Insert(2, compositor.CreateColorGradientStop(0.6f, clr3));
-            gradientStops.Insert(3, compositor.CreateColorGradientStop(1.0f, clr4));
+            //var clr1 = (Windows.UI.Color)App.Current.Resources["GC1"];
+            //var clr2 = (Windows.UI.Color)App.Current.Resources["GC2"];
+            //var clr3 = (Windows.UI.Color)App.Current.Resources["GC3"];
+            //var clr4 = (Windows.UI.Color)App.Current.Resources["GC4"];
+            gradientStops.Insert(0, compositor.CreateColorGradientStop(0.0f, (Windows.UI.Color)clr1));
+            gradientStops.Insert(1, compositor.CreateColorGradientStop(0.3f, (Windows.UI.Color)clr2));
+            gradientStops.Insert(2, compositor.CreateColorGradientStop(0.6f, (Windows.UI.Color)clr3));
+            gradientStops.Insert(3, compositor.CreateColorGradientStop(1.0f, (Windows.UI.Color)clr4));
         }
         else
         {

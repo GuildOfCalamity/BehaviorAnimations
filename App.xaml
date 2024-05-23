@@ -40,6 +40,12 @@
             <Color x:Key="GC2">#3F4E91C4</Color>
             <Color x:Key="GC3">#3F335F7F</Color>
             <Color x:Key="GC4">#3F192E3D</Color>
+            <Color x:Key="BC1">#5000FF21</Color>
+            <Color x:Key="BC2">#504800FF</Color>
+            <Color x:Key="BC3">#50FFD800</Color>
+            <Color x:Key="BC4">#50FF6A00</Color>
+            <Color x:Key="BC5">#50FF00DC</Color>
+
 
             <media:AcrylicBrush
                 x:Key="RevealBorderBrush"

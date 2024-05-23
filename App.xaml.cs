@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 using Windows.Foundation;
+using Windows.Foundation.Metadata;
 using Windows.UI.Popups;
 using Windows.UI.ViewManagement;
 
@@ -21,10 +22,12 @@ namespace BehaviorAnimations;
 /// </summary>
 public partial class App : Application
 {
+    #region [Props]
     int m_width = 600;
     int m_height = 600;
     Window? m_window;
     static UISettings m_UISettings = new UISettings();
+
     public static FrameworkElement? MainRoot { get; set; }
     public static IntPtr WindowHandle { get; set; }
     public static bool IsClosing { get; set; } = false;
@@ -33,8 +36,9 @@ public partial class App : Application
 #if IS_UNPACKAGED // We're using a custom PropertyGroup Condition we defined in the csproj to help us with the decision.
     public static bool IsPackaged { get => false; }
 #else
-public static bool IsPackaged { get => true; }
+    public static bool IsPackaged { get => true; }
 #endif
+
     public static bool TransparencyEffectsEnabled { get => m_UISettings.AdvancedEffectsEnabled; }
     public static bool AnimationsEffectsEnabled { get => m_UISettings.AnimationsEnabled; }
     public static double TextScaleFactor { get => m_UISettings.TextScaleFactor; }
@@ -55,7 +59,7 @@ public static bool IsPackaged { get => true; }
             }
         }
     }
-
+    #endregion
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code

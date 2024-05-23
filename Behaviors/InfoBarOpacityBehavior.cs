@@ -84,7 +84,9 @@ public class InfoBarOpacityBehavior : Behavior<InfoBar>
         if (!App.AnimationsEffectsEnabled)
             return;
 
+        // Since there is no Opening event, we'll need to know when the InfoBar is opened.
         _iopToken = AssociatedObject.RegisterPropertyChangedCallback(InfoBar.IsOpenProperty, IsOpenChanged);
+
         AssociatedObject.Loaded += AssociatedObject_Loaded;
         AssociatedObject.Unloaded += AssociatedObject_Unloaded;
     }
@@ -158,111 +160,7 @@ public class InfoBarOpacityBehavior : Behavior<InfoBar>
         targetVisual.StartAnimation("Opacity", opacityAnimation);
     }
 
-    /// <summary>
-    /// Offset animation using <see cref="Microsoft.UI.Composition.Vector3KeyFrameAnimation"/>
-    /// </summary>
-    void AnimateUIElementOffset(Point to, TimeSpan duration, UIElement target, string ease, Microsoft.UI.Composition.AnimationDirection direction = Microsoft.UI.Composition.AnimationDirection.Normal)
-    {
-        Microsoft.UI.Composition.CompositionEasingFunction easer;
-        var targetVisual = ElementCompositionPreview.GetElementVisual(target);
-        if (targetVisual is null) { return; }
-        var compositor = targetVisual.Compositor;
-        var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
-        offsetAnimation.StopBehavior = Microsoft.UI.Composition.AnimationStopBehavior.SetToFinalValue;
-        offsetAnimation.Direction = direction;
-        offsetAnimation.Duration = duration;
-        offsetAnimation.Target = "Offset";
-
-        if (string.IsNullOrEmpty(ease) || ease.Contains("linear", StringComparison.CurrentCultureIgnoreCase))
-            easer = compositor.CreateLinearEasingFunction();
-        else
-            easer = CreatePennerEquation(compositor, ease);
-
-        offsetAnimation.InsertKeyFrame(0.0f, new Vector3((float)to.X, (float)to.Y, 0), easer);
-        offsetAnimation.InsertKeyFrame(1.0f, new Vector3(0), easer);
-        targetVisual.StartAnimation("Offset", offsetAnimation);
-    }
-
-    /// <summary>
-    /// Scale animation using <see cref="Microsoft.UI.Composition.Vector3KeyFrameAnimation"/>
-    /// </summary>
-    void AnimateUIElementScale(double to, TimeSpan duration, UIElement target, string ease, Microsoft.UI.Composition.AnimationDirection direction = Microsoft.UI.Composition.AnimationDirection.Normal)
-    {
-        Microsoft.UI.Composition.CompositionEasingFunction easer;
-        var targetVisual = ElementCompositionPreview.GetElementVisual(target);
-        var compositor = targetVisual.Compositor;
-        var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
-        scaleAnimation.StopBehavior = Microsoft.UI.Composition.AnimationStopBehavior.SetToFinalValue;
-        scaleAnimation.Direction = direction;
-        scaleAnimation.Duration = duration;
-        scaleAnimation.Target = "Scale";
-
-        if (string.IsNullOrEmpty(ease) || ease.Contains("linear", StringComparison.CurrentCultureIgnoreCase))
-            easer = compositor.CreateLinearEasingFunction();
-        else
-            easer = CreatePennerEquation(compositor, ease);
-
-        scaleAnimation.InsertKeyFrame(0.0f, new Vector3(0), easer);
-        scaleAnimation.InsertKeyFrame(1.0f, new Vector3((float)to), easer);
-        targetVisual.StartAnimation("Scale", scaleAnimation);
-    }
-
-    /// <summary>
-    /// Bounce animation using <see cref="Microsoft.UI.Composition.Vector3KeyFrameAnimation"/>
-    /// </summary>
-    void AnimateUIElementSpring(double to, TimeSpan duration, UIElement target, double damping)
-    {
-        var targetVisual = ElementCompositionPreview.GetElementVisual(target);
-        if (targetVisual is null) { return; }
-        var compositor = targetVisual.Compositor;
-        var springAnimation = compositor.CreateSpringVector3Animation();
-        springAnimation.StopBehavior = Microsoft.UI.Composition.AnimationStopBehavior.SetToFinalValue;
-        springAnimation.FinalValue = new Vector3((float)to);
-        springAnimation.Period = duration;
-        springAnimation.DampingRatio = (float)damping;
-        springAnimation.Target = "Scale";
-        targetVisual.StartAnimation("Scale", springAnimation);
-    }
-
-    /// <summary>
-    /// Rotation animation using <see cref="Microsoft.UI.Composition.ScalarKeyFrameAnimation"/> and expression key frames.
-    /// </summary>
-    void AnimateUIElementRotate(TimeSpan duration, UIElement target, string direction, string ease, bool stop = false)
-    {
-        var targetVisual = ElementCompositionPreview.GetElementVisual(target);
-        if (targetVisual is null) { return; }
-
-        if (stop)
-        {
-            targetVisual.StopAnimation("RotationAngleInDegrees");
-            return;
-        }
-
-        targetVisual.AnchorPoint = new Vector2(0.5f, 0.5f);
-        Microsoft.UI.Composition.CompositionEasingFunction easer;
-        var compositor = targetVisual.Compositor;
-        var rotateAnimation = compositor.CreateScalarKeyFrameAnimation();
-        var linear = compositor.CreateLinearEasingFunction();
-
-        if (string.IsNullOrEmpty(ease) || ease.Contains("linear", StringComparison.CurrentCultureIgnoreCase))
-            easer = compositor.CreateLinearEasingFunction();
-        else
-            easer = CreatePennerEquation(compositor, ease);
-
-        rotateAnimation.InsertExpressionKeyFrame(0.0f, "this.StartingValue");
-        if (string.IsNullOrEmpty(direction) || direction.Contains("normal", StringComparison.CurrentCultureIgnoreCase))
-            rotateAnimation.InsertExpressionKeyFrame(1.0f, "this.StartingValue + 360f", easer);
-        else
-            rotateAnimation.InsertExpressionKeyFrame(1.0f, "this.StartingValue - 360f", easer);
-
-        rotateAnimation.StopBehavior = Microsoft.UI.Composition.AnimationStopBehavior.SetToFinalValue;
-        rotateAnimation.Duration = duration;
-        rotateAnimation.IterationBehavior = Microsoft.UI.Composition.AnimationIterationBehavior.Forever;
-
-        targetVisual.StartAnimation("RotationAngleInDegrees", rotateAnimation);
-    }
-
-    /// <summary>
+     /// <summary>
     /// This should be moved to a shared module, but I want to keep these behaviors portable.
     /// </summary>
     static Microsoft.UI.Composition.CompositionEasingFunction CreatePennerEquation(Microsoft.UI.Composition.Compositor compositor, string pennerType = "SineEaseInOut")

@@ -9,6 +9,7 @@
 	- "Microsoft.WindowsAppSDK" Version="1.5.240428000" />
 	- "Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233"
 	- "Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9"
+* [Documentation](https://github.com/Microsoft/XamlBehaviors/wiki/API-Reference) on XamlBehaviors API.
 
  ## 📝 v1.0.0.0 - May 2024
 * Initial release.

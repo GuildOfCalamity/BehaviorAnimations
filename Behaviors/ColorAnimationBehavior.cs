@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 
-using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.Xaml.Interactivity;
@@ -13,10 +12,10 @@ namespace BehaviorAnimations.Behaviors;
 /// </summary>
 /// <remarks>
 /// These are the bound events:
-///  - Loaded..........: Applies From/To gradient brush.
-///  - Unloaded........: No brush change.
-///  - PointerEntered..: Applies To/From gradient brush.
-///  - PointerExited...: Applies From/To gradient brush.
+///  - Loaded..........: Applies From/To color.
+///  - Unloaded........: No color change.
+///  - PointerEntered..: Applies To/From color.
+///  - PointerExited...: Applies From/To color.
 /// </remarks>
 public class ColorAnimationBehavior : Behavior<FrameworkElement>
 {
@@ -207,8 +206,12 @@ public class ColorAnimationBehavior : Behavior<FrameworkElement>
             https://github.com/MicrosoftDocs/winrt-api/blob/docs//windows.ui.composition/colorkeyframeanimation.md
         */
         var ccb = compositor.CreateColorBrush();
-        spriteVisual.CompositeMode = CompositionCompositeMode.MinBlend;
+        spriteVisual.CompositeMode = Microsoft.UI.Composition.CompositionCompositeMode.MinBlend;
+        // Set the size of the sprite visual to cover the element.
         spriteVisual.RelativeSizeAdjustment = System.Numerics.Vector2.One;
+        // Or you can be more specific:
+        //spriteVisual.Offset = new System.Numerics.Vector3(1, 1, 0);
+        //spriteVisual.Size = new System.Numerics.Vector2((float)element.ActualSize.X-2, (float)element.ActualSize.Y-2);
         spriteVisual.Brush = ccb;
         //ccb.StopAnimation("Color");
         // When using a sprite, the animation will not work unless the child visual is set.
@@ -466,10 +469,10 @@ public class ColorGradientBehavior : Behavior<FrameworkElement>
         gb.EndPoint = new System.Numerics.Vector2(0, 1);
 
         // Bitmap and clip edges are antialiased.
-        spriteVisual.BorderMode = CompositionBorderMode.Soft;
+        spriteVisual.BorderMode = Microsoft.UI.Composition.CompositionBorderMode.Soft;
 
         // Subtract color channels in background.
-        spriteVisual.CompositeMode = CompositionCompositeMode.MinBlend;
+        spriteVisual.CompositeMode = Microsoft.UI.Composition.CompositionCompositeMode.MinBlend;
 
         // Set the size of the sprite visual to cover the element.
         spriteVisual.RelativeSizeAdjustment = System.Numerics.Vector2.One;

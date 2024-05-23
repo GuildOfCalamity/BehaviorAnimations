@@ -10,6 +10,10 @@ namespace BehaviorAnimations.Behaviors;
 /// <summary>
 /// This behavior listens to a key down event on the associated <see cref="UIElement"/> when it is loaded and executes an action.
 /// </summary>
+/// <remarks>
+/// This is similar to EventTriggerBehavior EventName="KeyDown" but allows you to specify the key that will cause the trigger.
+/// Original version: https://github.com/CommunityToolkit/WindowsCommunityToolkit/blob/main/Microsoft.Toolkit.Uwp.UI.Behaviors/Keyboard/KeyDownTriggerBehavior.cs
+/// </remarks>
 [TypeConstraint(typeof(FrameworkElement))]
 public class KeyDownTriggerBehavior : Trigger<FrameworkElement>
 {
