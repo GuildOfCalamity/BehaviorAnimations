@@ -15,6 +15,14 @@ using Windows.UI.Core.AnimationMetrics;
 
 namespace BehaviorAnimations.Behaviors;
 
+public enum SlideDirection
+{
+    Left,
+    Up,
+    Right,
+    Down
+}
+
 /// <summary>
 /// When the <see cref="FrameworkElement"/> is loaded the translation animation will be performed.
 /// We'll consider sliding up to be transitioning into a usable state, while sliding down means to put away.
@@ -47,16 +55,16 @@ public class SlideAnimationBehavior : Behavior<FrameworkElement>
     /// </summary>
     public static readonly DependencyProperty DirectionProperty = DependencyProperty.Register(
         nameof(Direction),
-        typeof(string),
+        typeof(SlideDirection),
         typeof(SlideAnimationBehavior),
         new PropertyMetadata(false));
 
     /// <summary>
     /// Gets or sets the direction.
     /// </summary>
-    public string Direction
+    public SlideDirection Direction
     {
-        get => (string)GetValue(DirectionProperty);
+        get => (SlideDirection)GetValue(DirectionProperty);
         set => SetValue(DirectionProperty, value);
     }
 
@@ -106,7 +114,7 @@ public class SlideAnimationBehavior : Behavior<FrameworkElement>
         new PropertyMetadata(200d));
 
     /// <summary>
-    /// Gets or sets the default amount to slide is not control size can be acquired.
+    /// Gets or sets the default amount to slide if the control size cannot be acquired.
     /// </summary>
     public double FallbackAmount
     {
@@ -151,29 +159,25 @@ public class SlideAnimationBehavior : Behavior<FrameworkElement>
         {
             Debug.WriteLine($"[INFO] Reported {sender.GetType().Name} width by height: {obj.ActualHeight} pixels by {obj.ActualWidth} pixels");
 
-            if (Direction.Equals("up", StringComparison.CurrentCultureIgnoreCase))
-                AnimateUIElementOffset(new Point(0, obj.ActualHeight), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
-            else if(Direction.Equals("down", StringComparison.CurrentCultureIgnoreCase))
-                AnimateUIElementOffset(new Point(0, obj.ActualHeight), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode, Microsoft.UI.Composition.AnimationDirection.Reverse);
-            else if (Direction.Equals("left", StringComparison.CurrentCultureIgnoreCase))
-                AnimateUIElementOffset(new Point(obj.ActualWidth, 0), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
-            else if (Direction.Equals("right", StringComparison.CurrentCultureIgnoreCase))
-                AnimateUIElementOffset(new Point(obj.ActualWidth, 0), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode, Microsoft.UI.Composition.AnimationDirection.Reverse);
-            else // default is up
-                AnimateUIElementOffset(new Point(0, obj.ActualHeight), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
+            switch (Direction)
+            {
+                case SlideDirection.Up: AnimateUIElementOffset(new Point(0, obj.ActualHeight), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode); break;
+                case SlideDirection.Down: AnimateUIElementOffset(new Point(0, obj.ActualHeight), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode, Microsoft.UI.Composition.AnimationDirection.Reverse); break;
+                case SlideDirection.Left: AnimateUIElementOffset(new Point(obj.ActualWidth, 0), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode); break;
+                case SlideDirection.Right: AnimateUIElementOffset(new Point(obj.ActualWidth, 0), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode, Microsoft.UI.Composition.AnimationDirection.Reverse); break;
+                default: AnimateUIElementOffset(new Point(0, obj.ActualHeight), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode); break;
+            }
         }
-        else
+        else // use fallback amount
         {
-            if (Direction.Equals("up", StringComparison.CurrentCultureIgnoreCase))
-                AnimateUIElementOffset(new Point(0, (float)FallbackAmount), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
-            else if (Direction.Equals("down", StringComparison.CurrentCultureIgnoreCase))
-                AnimateUIElementOffset(new Point(0, (float)FallbackAmount), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode, Microsoft.UI.Composition.AnimationDirection.Reverse);
-            else if (Direction.Equals("left", StringComparison.CurrentCultureIgnoreCase))
-                AnimateUIElementOffset(new Point((float)FallbackAmount, 0), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
-            else if (Direction.Equals("right", StringComparison.CurrentCultureIgnoreCase))
-                AnimateUIElementOffset(new Point((float)FallbackAmount, 0), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode, Microsoft.UI.Composition.AnimationDirection.Reverse);
-            else // default is up
-                AnimateUIElementOffset(new Point(0, (float)FallbackAmount), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode);
+            switch (Direction)
+            {
+                case SlideDirection.Up: AnimateUIElementOffset(new Point(0, (float)FallbackAmount), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode); break;
+                case SlideDirection.Down: AnimateUIElementOffset(new Point(0, (float)FallbackAmount), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode, Microsoft.UI.Composition.AnimationDirection.Reverse); break;
+                case SlideDirection.Left: AnimateUIElementOffset(new Point((float)FallbackAmount, 0), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode); break;
+                case SlideDirection.Right: AnimateUIElementOffset(new Point((float)FallbackAmount, 0), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode, Microsoft.UI.Composition.AnimationDirection.Reverse); break;
+                default: AnimateUIElementOffset(new Point(0, (float)FallbackAmount), TimeSpan.FromSeconds(Seconds), (UIElement)sender, EaseMode); break;
+            }
         }
 
         #region [using DispatcherTimer for collapse]

@@ -145,6 +145,8 @@ public class SpringAnimationBehavior : Behavior<FrameworkElement>
     {
         var targetVisual = ElementCompositionPreview.GetElementVisual(target);
         if (targetVisual is null) { return; }
+        // This is important for the effect to work properly.
+        targetVisual.CenterPoint = new Vector3(target.ActualSize.X / 2f, target.ActualSize.Y / 2f, 0f);
         var compositor = targetVisual.Compositor;
         var springAnimation = compositor.CreateSpringVector3Animation();
         springAnimation.StopBehavior = Microsoft.UI.Composition.AnimationStopBehavior.SetToFinalValue;

@@ -15,7 +15,8 @@ using Windows.UI.Core.AnimationMetrics;
 namespace BehaviorAnimations.Behaviors;
 
 /// <summary>
-/// <see cref="Microsoft.UI.Xaml.Controls.Button"/> <see cref="Microsoft.Xaml.Interactivity.Behavior"/>.
+/// <see cref="Microsoft.UI.Xaml.Controls.Button"/> <see cref="Microsoft.Xaml.Interactivity.Behavior"/>
+/// utilizing the scale effect with a <see cref="Microsoft.UI.Composition.Vector3KeyFrameAnimation"/>.
 /// </summary>
 public class ButtonAnimationBehavior : Behavior<Button>
 {
@@ -28,7 +29,7 @@ public class ButtonAnimationBehavior : Behavior<Button>
     public static readonly DependencyProperty SecondsProperty = DependencyProperty.Register(
         nameof(Seconds),
         typeof(double),
-        typeof(InfoBarOpacityBehavior),
+        typeof(ButtonAnimationBehavior),
         new PropertyMetadata(1.25d));
 
     /// <summary>
@@ -46,7 +47,7 @@ public class ButtonAnimationBehavior : Behavior<Button>
     public static readonly DependencyProperty FinalProperty = DependencyProperty.Register(
         nameof(Final),
         typeof(double),
-        typeof(InfoBarOpacityBehavior),
+        typeof(ButtonAnimationBehavior),
         new PropertyMetadata(1d));
 
     /// <summary>
@@ -64,7 +65,7 @@ public class ButtonAnimationBehavior : Behavior<Button>
     public static readonly DependencyProperty EaseModeProperty = DependencyProperty.Register(
         nameof(EaseMode),
         typeof(string),
-        typeof(InfoBarOpacityBehavior),
+        typeof(ButtonAnimationBehavior),
         new PropertyMetadata("Linear"));
 
     /// <summary>
@@ -171,7 +172,6 @@ public class ButtonAnimationBehavior : Behavior<Button>
 
         // You must call End to get the completed event to fire.
         batch.End();
-
 
         targetVisual.StartAnimation("Scale", scaleAnimation);
     }

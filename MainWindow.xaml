@@ -199,7 +199,7 @@
                         <interact:Interaction.Behaviors>
                             <behave:SpringAnimationBehavior
                                 Damping="0.2"
-                                Final="1.05"
+                                Final="1.07"
                                 Seconds="0.04" />
                         </interact:Interaction.Behaviors>
                     </Slider>
@@ -316,6 +316,12 @@
                                     TargetObject="{Binding ElementName=btn}"
                                     UseTransitions="False" />
                             </interactcore:DataTriggerBehavior>
+                            <interactcore:EventTriggerBehavior EventName="Toggled">
+                                <interactcore:ChangePropertyAction
+                                    PropertyName="Header"
+                                    TargetObject="{x:Bind tsSample}"
+                                    Value="Toggled" />
+                            </interactcore:EventTriggerBehavior>
                             <interactcore:EventTriggerBehavior EventName="PointerEntered">
                                 <interactcore:ChangePropertyAction
                                     PropertyName="Header"
@@ -346,14 +352,15 @@
                             MinWidth="120"
                             Content="Scale Click"
                             FontFamily="{ThemeResource PrimaryFont}"
-                            FontSize="{ThemeResource FontSizeMedium}">
+                            FontSize="{ThemeResource FontSizeMedium}"
+                            Style="{ThemeResource EnhancedButton}">
                             <interact:Interaction.Behaviors>
                                 <!--
                                     This effect can jump if not enclosed inside a parent container, e.g. a Grid/StackPanel
                                 -->
                                 <behave:ButtonAnimationBehavior
                                     EaseMode="QuadEaseOut"
-                                    Final="0.8"
+                                    Final="0.75"
                                     Seconds="0.08" />
                             </interact:Interaction.Behaviors>
                         </Button>
@@ -381,7 +388,116 @@
                                 <behave:ColorGradientBehavior From="#FF4800FF" To="#FF00FFFF" />
                             </interact:Interaction.Behaviors>
                         </Button>
+
                     </StackPanel>
+
+                    <!--#region SnapButtonBehavior-->
+                    <StackPanel
+                        Margin="0,12,0,2"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                        <!--  Snap Left  -->
+                        <Button
+                            MinWidth="120"
+                            FontFamily="{ThemeResource PrimaryFont}"
+                            FontSize="{ThemeResource FontSizeMedium}">
+                            <Button.Content>
+                                <ctrl:CompositionShadow
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    BlurRadius="2"
+                                    OffsetX="3"
+                                    OffsetY="3"
+                                    Color="#000000">
+                                    <TextBlock Foreground="{ThemeResource PrimaryBrush}" Text="Snap Left" />
+                                </ctrl:CompositionShadow>
+                            </Button.Content>
+                            <Button.Resources>
+                                <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+                                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+                            </Button.Resources>
+                            <interact:Interaction.Behaviors>
+                                <behave:SnapButtonBehavior DurationSeconds="0.35" SnapType="Left" />
+                            </interact:Interaction.Behaviors>
+                        </Button>
+
+                        <!--  Snap Top  -->
+                        <Button
+                            MinWidth="120"
+                            FontFamily="{ThemeResource PrimaryFont}"
+                            FontSize="{ThemeResource FontSizeMedium}">
+                            <Button.Content>
+                                <ctrl:CompositionShadow
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    BlurRadius="2"
+                                    OffsetX="3"
+                                    OffsetY="3"
+                                    Color="#000000">
+                                    <TextBlock Foreground="{ThemeResource PrimaryBrush}" Text="Snap Top" />
+                                </ctrl:CompositionShadow>
+                            </Button.Content>
+                            <Button.Resources>
+                                <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+                                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+                            </Button.Resources>
+                            <interact:Interaction.Behaviors>
+                                <behave:SnapButtonBehavior DurationSeconds="0.35" SnapType="Top" />
+                            </interact:Interaction.Behaviors>
+                        </Button>
+
+                        <!--  Snap Right  -->
+                        <Button
+                            MinWidth="120"
+                            FontFamily="{ThemeResource PrimaryFont}"
+                            FontSize="{ThemeResource FontSizeMedium}">
+                            <Button.Content>
+                                <ctrl:CompositionShadow
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    BlurRadius="2"
+                                    OffsetX="3"
+                                    OffsetY="3"
+                                    Color="#000000">
+                                    <TextBlock Foreground="{ThemeResource PrimaryBrush}" Text="Snap Right" />
+                                </ctrl:CompositionShadow>
+                            </Button.Content>
+                            <Button.Resources>
+                                <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+                                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+                            </Button.Resources>
+                            <interact:Interaction.Behaviors>
+                                <behave:SnapButtonBehavior DurationSeconds="0.35" SnapType="Right" />
+                            </interact:Interaction.Behaviors>
+                        </Button>
+
+                        <!--  Snap Bottom  -->
+                        <Button
+                            MinWidth="120"
+                            FontFamily="{ThemeResource PrimaryFont}"
+                            FontSize="{ThemeResource FontSizeMedium}">
+                            <Button.Content>
+                                <ctrl:CompositionShadow
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    BlurRadius="2"
+                                    OffsetX="3"
+                                    OffsetY="3"
+                                    Color="#000000">
+                                    <TextBlock Foreground="{ThemeResource PrimaryBrush}" Text="Snap Bottom" />
+                                </ctrl:CompositionShadow>
+                            </Button.Content>
+                            <Button.Resources>
+                                <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+                                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+                            </Button.Resources>
+                            <interact:Interaction.Behaviors>
+                                <behave:SnapButtonBehavior DurationSeconds="0.35" SnapType="Bottom" />
+                            </interact:Interaction.Behaviors>
+                        </Button>
+
+                    </StackPanel>
+                    <!--#endregion-->
 
                     <ctrl:SeparatorLine Margin="1,5,0,0" />
 
@@ -406,6 +522,9 @@
                         </interact:Interaction.Behaviors>
                     </Image>
                     <!--#endregion-->
+
+                    <!--  Custom Button Style Test  -->
+                    <!--<Button Content="❌" Style="{ThemeResource CloseButtonStyle}" />-->
 
                 </StackPanel>
 
